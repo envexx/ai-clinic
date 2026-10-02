@@ -305,4 +305,26 @@ Keputusan yang masih perlu persetujuan pemilik: pemilihan plan Prisma Postgres (
 2. Bila spike lulus → kerjakan M0 tasks, akhiri dengan CI hijau.
 3. Baru naik ke M1 → M2, dan seterusnya. **Jangan menyentuh M4 sebelum M2 lulus concurrency gate.**
 
-> Status saat ini: menunggu konfirmasi pemilik untuk mulai M0-spike.
+> Status saat ini: M0 selesai (lihat Progress log di bawah). Berikutnya M1, dengan satu item terbuka: database Prisma Postgres hosted untuk uji concurrency M2.
+
+---
+
+## 13. Progress log
+
+### M0 — Foundation: SELESAI (2 Oktober 2026)
+
+Terverifikasi: `pnpm typecheck` (0 error), `pnpm lint` (0 masalah), `pnpm test` (10 lulus), `pnpm build` (sukses), `pnpm smoke` (10 cek runtime lulus).
+
+Yang sudah ada:
+- Next.js 16 App Router, TypeScript strict, Tailwind v4, struktur folder per modul.
+- Prisma 7.10.0 + `@prisma/adapter-pg` + Prisma Postgres lokal; migrasi `init`, `enable_pgvector`, `staff_sessions`.
+- `pgvector` aktif + HNSW index terverifikasi (cosine search benar).
+- Env validation (Zod), domain result envelope + error codes, logger terstruktur + correlation id, rate limiter in-memory.
+- Guest session (cookie HttpOnly opaque), staff login/logout (scrypt + session DB), RBAC helper.
+- Seed WellNest Clinic + 2 akun staf, unit test, smoke test, CI GitHub Actions, README, `docs/SPIKE_RESULTS.md`.
+
+Bukti lengkap: `docs/SPIKE_RESULTS.md`.
+
+### Item terbuka sebelum M2
+
+Uji concurrency (AT-08) **belum bisa** dijalankan di Prisma Postgres lokal karena PGlite hanya menerima satu koneksi. Dibutuhkan URL Prisma Postgres hosted (dev + test) sebelum M2.
