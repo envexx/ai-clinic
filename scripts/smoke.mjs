@@ -211,6 +211,24 @@ async function main() {
     "services admin page renders seeded services",
   );
 
+  // --- knowledge ---
+  const knowledgeRes = await fetch(`${BASE}/api/admin/knowledge`, {
+    headers: { cookie: staffCookie },
+  }).then((r) => r.json());
+  assert(
+    knowledgeRes.success && knowledgeRes.data.length >= 15,
+    "admin lists seeded knowledge documents",
+  );
+
+  const knowledgeSearch = await fetch(
+    `${BASE}/api/admin/knowledge/search?q=${encodeURIComponent("opening hours")}`,
+    { headers: { cookie: staffCookie } },
+  ).then((r) => r.json());
+  assert(
+    knowledgeSearch.success && knowledgeSearch.data.length > 0,
+    "knowledge retrieval returns citations",
+  );
+
   // --- booking flow ---
   const servicesRes = await fetch(`${BASE}/api/services`).then((r) => r.json());
   assert(

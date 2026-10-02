@@ -305,7 +305,7 @@ Keputusan yang masih perlu persetujuan pemilik: pemilihan plan Prisma Postgres (
 2. Bila spike lulus → kerjakan M0 tasks, akhiri dengan CI hijau.
 3. Baru naik ke M1 → M2, dan seterusnya. **Jangan menyentuh M4 sebelum M2 lulus concurrency gate.**
 
-> Status saat ini: M0–M2 selesai (lihat Progress log di bawah). Berikutnya M3 (knowledge + pgvector). Satu item terbuka: database Prisma Postgres hosted untuk menjalankan gate concurrency paralel (AT-08).
+> Status saat ini: M0–M3 selesai (lihat Progress log di bawah). Berikutnya M4 (chat agent dengan Gemini). Dua item terbuka: database Prisma Postgres hosted untuk gate concurrency paralel (AT-08), dan `GEMINI_API_KEY` untuk embedding/LLM sungguhan.
 
 ---
 
@@ -357,6 +357,23 @@ Catatan penting (jujur):
 - T1.6 (tolak perubahan jadwal yang bentrok dengan appointment confirmed) menyusul bersama dashboard appointment staf (M5); kapasitas tetap aman karena exclusion constraint.
 - Reschedule/cancel sudah ada di API/domain tetapi belum ada UI visitor.
 
-### Item terbuka sebelum M3
+### M3 — Knowledge + retrieval: SELESAI (2 Oktober 2026)
 
-Uji concurrency paralel (AT-08) memerlukan URL Prisma Postgres hosted. Tidak memblokir M3 (knowledge), yang hanya butuh `pgvector` (sudah aktif).
+Terverifikasi: `pnpm typecheck` (0 error), `pnpm lint` (0 masalah), `pnpm test` (31 lulus), `pnpm build` (40 route), `pnpm smoke` (29 cek runtime lulus), `pnpm test:integration` (7 lulus, 1 skip).
+
+Yang sudah ada:
+- Model `knowledge_documents`, `knowledge_versions` (+ kolom `vector(768)` Unsupported), enums approval/indexing.
+- Lifecycle DRAFT → APPROVED → INDEXING → READY, retry (FAILED), DISABLED langsung keluar retrieval.
+- Embedding via Gemini `gemini-embedding-001` (dimensi 768) bila `GEMINI_API_KEY` ada; fallback lokal deterministik bila tidak, supaya pipeline dan test tetap jalan offline.
+- Index HNSW cosine `pgvector` + pencarian raw SQL yang selalu memvalidasi ulang ke DB (hanya versi aktif, APPROVED + READY).
+- Fallback keyword search bila embedding gagal; tidak pernah mengarang jawaban.
+- API admin knowledge (list/create/version/approve/disable/reindex/search) + UI `/dashboard/knowledge` (buat dokumen, tambah versi, approve, disable, retry, uji retrieval).
+- Seed 15 dokumen administratif WellNest, langsung ter-index.
+- Unit test (embedding fallback) + integration test lifecycle (AT-03: disabled/versi lama tidak dipakai).
+
+Catatan: embedding meng-index judul + isi agar pencarian judul akurat. Tanpa API key, kualitas semantik terbatas (fallback leksikal) — dicatat di README.
+
+### Item terbuka sebelum M4
+
+- `GEMINI_API_KEY` untuk embedding (dan nanti LLM) sungguhan. Tanpa itu, M4 memakai fallback/abstain.
+- Uji concurrency paralel (AT-08) masih butuh Prisma Postgres hosted.

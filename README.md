@@ -5,7 +5,8 @@ administrative questions, book/reschedule/cancel appointments, and hand off to
 staff. Staff use a dashboard to manage the same appointments and conversations.
 
 This repository currently implements **M0 – Foundation**, **M1 – Clinic
-configuration**, and **M2 – Booking domain**. The product requirements live in
+configuration**, **M2 – Booking domain**, and **M3 – Knowledge**. The product
+requirements live in
 [`PRD_MVP_AI_Clinic_Front_Desk.md`](./PRD_MVP_AI_Clinic_Front_Desk.md) and the
 staged delivery plan in [`PLAN.md`](./PLAN.md).
 
@@ -77,6 +78,7 @@ Seeded demo accounts (password from `SEED_STAFF_PASSWORD`, default `demo-passwor
 | `/dashboard/services` | Manage services (admin only) |
 | `/dashboard/providers` | Manage providers (admin only) |
 | `/dashboard/schedules` | Clinic hours, provider working hours, time off (admin only) |
+| `/dashboard/knowledge` | Knowledge documents, versions, approval, retrieval test (admin only) |
 | `/dashboard/settings` | Booking policy and clinic settings (admin only) |
 
 ## API
@@ -109,6 +111,13 @@ routes require an `ADMIN` staff session and enforce same-origin on mutations.
 | `/api/actions/[id]/confirm` | POST | Execute a pending action (guest-owned, idempotent) |
 | `/api/my-appointments` | GET | Appointments owned by the guest session |
 | `/api/staff/appointments/[id]` | PATCH | Staff status transition (audited) |
+| `/api/admin/knowledge` | GET, POST | List / create knowledge documents |
+| `/api/admin/knowledge/[documentId]` | PATCH | Enable/disable a document |
+| `/api/admin/knowledge/[documentId]/versions` | POST | Add a new draft version |
+| `/api/admin/knowledge/versions/[versionId]/approve` | POST | Approve + index a version |
+| `/api/admin/knowledge/versions/[versionId]/disable` | POST | Disable a version |
+| `/api/admin/knowledge/versions/[versionId]/reindex` | POST | Retry indexing |
+| `/api/admin/knowledge/search` | GET | Retrieval test (returns citations) |
 
 ### Booking model
 
@@ -119,6 +128,20 @@ routes require an `ADMIN` staff session and enforce same-origin on mutations.
   **exclusion constraint** on `provider + tstzrange(startAt, occupiedEnd)` for
   active appointments (verified working on local Prisma Postgres).
 - Every mutation writes an `audit_events` row in the same transaction.
+
+### Knowledge retrieval (no external memory service)
+
+- Documents have immutable versions; editing creates a new DRAFT version. The
+  previous version stays active until the new one is **APPROVED + READY**.
+- Embeddings are stored in a `vector(768)` column with an HNSW cosine index
+  (`pgvector`). Prisma cannot type `vector`, so it is read/written with raw SQL.
+- Retrieval always re-validates against the database: only the active version of
+  an active document that is APPROVED + READY is eligible. `DISABLED` versions
+  drop out immediately.
+- Embeddings use **Gemini** (`gemini-embedding-001`) when `GEMINI_API_KEY` is
+  set; otherwise a deterministic local fallback is used so the pipeline and
+  tests work offline. Retrieval degrades to keyword search if the provider
+  fails, and never fabricates an answer.
 
 ## Project structure
 
@@ -140,6 +163,7 @@ src/
     clinic/                # settings, services, providers, schedules, validation
     scheduling/            # timezone-aware availability engine
     appointments/          # booking domain: actions, idempotency, create/reschedule/cancel
+    knowledge/             # documents, versions, embeddings, pgvector retrieval
     audit/                 # audit event writer
   generated/prisma/        # generated client (gitignored)
 tests/                     # Vitest unit tests
@@ -163,7 +187,9 @@ docs/SPIKE_RESULTS.md      # M0 verification evidence
   dashboard in M5. Capacity conflicts are still impossible because of the
   exclusion constraint.
 - Reschedule/cancel have API and domain support but no visitor UI yet.
-- Knowledge retrieval and AI are M3–M4.
+- Without `GEMINI_API_KEY`, embeddings use a lexical local fallback. Semantic
+  quality requires the real Gemini embedding model.
+- The chat agent (streaming, tools, citations in conversation) is M4.
 
 ## Documentation
 

@@ -9,6 +9,7 @@ const NAV = [
   { href: "/dashboard/services", label: "Services" },
   { href: "/dashboard/providers", label: "Providers" },
   { href: "/dashboard/schedules", label: "Schedules" },
+  { href: "/dashboard/knowledge", label: "Knowledge" },
   { href: "/dashboard/settings", label: "Settings" },
 ] as const;
 

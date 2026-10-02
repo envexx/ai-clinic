@@ -43,6 +43,7 @@ model Clinic {
   appointments  Appointment[]
   pendingActions PendingAction[]
   auditEvents   AuditEvent[]
+  knowledgeDocuments KnowledgeDocument[]
 
   @@map("clinics")
 }
@@ -329,4 +330,62 @@ model AuditEvent {
   @@index([entityType, entityId, createdAt])
   @@index([clinicId, action, createdAt])
   @@map("audit_events")
+}
+
+enum KnowledgeApprovalStatus {
+  DRAFT
+  APPROVED
+  DISABLED
+}
+
+enum KnowledgeIndexingStatus {
+  PENDING
+  INDEXING
+  READY
+  FAILED
+}
+
+/// Administrative knowledge document. The authoritative filter is always the
+/// database: only the active version that is APPROVED + READY may be retrieved.
+model KnowledgeDocument {
+  id              String   @id @default(uuid()) @db.Uuid
+  clinicId        String   @db.Uuid
+  title           String
+  active          Boolean  @default(true)
+  activeVersionId String?  @unique @db.Uuid
+  createdAt       DateTime @default(now()) @db.Timestamptz
+  updatedAt       DateTime @updatedAt @db.Timestamptz
+
+  clinic        Clinic             @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  versions      KnowledgeVersion[] @relation("DocumentVersions")
+  activeVersion KnowledgeVersion?  @relation("ActiveVersion", fields: [activeVersionId], references: [id])
+
+  @@unique([clinicId, title])
+  @@index([clinicId, active])
+  @@map("knowledge_documents")
+}
+
+/// Immutable content version. Editing a document creates a new version; the
+/// old one stays active until the new one is approved and indexed.
+model KnowledgeVersion {
+  id             String                    @id @default(uuid()) @db.Uuid
+  documentId     String                    @db.Uuid
+  content        String
+  hash           String
+  sourceLabel    String?
+  approvalStatus KnowledgeApprovalStatus   @default(DRAFT)
+  indexingStatus KnowledgeIndexingStatus   @default(PENDING)
+  /// pgvector column; Prisma cannot read it, so it is accessed with raw SQL.
+  embedding      Unsupported("vector(768)")?
+  error          String?
+  approvedAt     DateTime?                 @db.Timestamptz
+  indexedAt      DateTime?                 @db.Timestamptz
+  createdAt      DateTime                  @default(now()) @db.Timestamptz
+  updatedAt      DateTime                  @updatedAt @db.Timestamptz
+
+  document  KnowledgeDocument  @relation("DocumentVersions", fields: [documentId], references: [id], onDelete: Cascade)
+  activeFor KnowledgeDocument? @relation("ActiveVersion")
+
+  @@index([documentId, approvalStatus])
+  @@map("knowledge_versions")
 }
