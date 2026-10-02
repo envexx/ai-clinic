@@ -54,6 +54,12 @@ type HistoryResponse = {
   }[];
 };
 
+function plainText(text: string): string {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, "$1")
+    .replace(/(^|\s)\*(?!\s)(.+?)\*/g, "$1$2");
+}
+
 function summaryLine(action: PendingAction): string {
   const summary = action.summary as {
     serviceName?: string;
@@ -192,7 +198,7 @@ export function ChatPanel() {
                 : "max-w-[85%] self-start rounded-2xl rounded-bl-md border border-border bg-card px-4 py-2.5 text-sm"
             }
           >
-            <p className="whitespace-pre-wrap">{message.content}</p>
+            <p className="whitespace-pre-wrap">{plainText(message.content)}</p>
 
             {message.citations.length > 0 && (
               <div className="mt-2 flex flex-col gap-1 border-t border-border pt-2 text-xs ">

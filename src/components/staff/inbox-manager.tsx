@@ -100,6 +100,13 @@ function clock(iso: string): string {
   }).format(new Date(iso));
 }
 
+/** Strip lightweight markdown so stored replies read as plain text. */
+function plainText(text: string): string {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, "$1")
+    .replace(/(^|\s)\*(?!\s)(.+?)\*/g, "$1$2");
+}
+
 function duration(fromIso: string, toIso: string): string {
   const minutes = Math.max(
     1,
@@ -129,6 +136,7 @@ export function InboxManager({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const threadRef = useRef<HTMLDivElement>(null);
+  const lastAnimatedKey = useRef("");
 
   useEffect(() => {
     let active = true;
@@ -138,7 +146,12 @@ export function InboxManager({
       }
       try {
         const data = await apiRequest<InboxItem[]>("/api/staff/conversations");
-        if (active) setItems(data);
+        if (active) {
+          // Only replace state when something actually changed.
+          setItems((prev) =>
+            JSON.stringify(prev) === JSON.stringify(data) ? prev : data,
+          );
+        }
       } catch {
         // ignore transient polling errors
       }
@@ -162,7 +175,12 @@ export function InboxManager({
         const data = await apiRequest<Detail>(
           `/api/staff/conversations/${selectedId}`,
         );
-        if (active) setDetail(data);
+        if (active) {
+          // Keep the same object when nothing changed so the thread is stable.
+          setDetail((prev) =>
+            prev && JSON.stringify(prev) === JSON.stringify(data) ? prev : data,
+          );
+        }
       } catch {
         // ignore
       }
@@ -175,24 +193,37 @@ export function InboxManager({
     };
   }, [selectedId]);
 
-  // One authored moment: message bubbles settle into place.
+  // One authored moment: animate only when opening a conversation or when a
+  // new message arrives — never on a background poll.
   useEffect(() => {
     if (!threadRef.current || !detail) return;
-    const nodes = threadRef.current.querySelectorAll("[data-message]");
+    const key = `${detail.conversation.id}:${detail.messages.length}`;
+    if (lastAnimatedKey.current === key) return;
+
+    const nodes = Array.from(
+      threadRef.current.querySelectorAll("[data-message]"),
+    );
     if (nodes.length === 0) return;
+
+    const sameConversation = lastAnimatedKey.current.startsWith(
+      `${detail.conversation.id}:`,
+    );
+    lastAnimatedKey.current = key;
+
+    const targets = sameConversation ? nodes.slice(-1) : nodes;
     gsap.fromTo(
-      nodes,
-      { opacity: 0, y: 10 },
+      targets,
+      { opacity: 0, y: 8 },
       {
         opacity: 1,
         y: 0,
-        duration: 0.36,
+        duration: 0.32,
         ease: "power2.out",
-        stagger: 0.035,
+        stagger: 0.03,
         overwrite: true,
       },
     );
-  }, [detail?.conversation.id, detail?.messages.length, detail]);
+  }, [detail]);
 
   const filtered = items.filter((item) => {
     if (tab === "mine") return item.assignedStaffId === staffId;
@@ -364,7 +395,9 @@ export function InboxManager({
                     </span>
                   </div>
                   <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                    {item.lastMessage?.content ?? "No messages yet"}
+                    {item.lastMessage
+                      ? plainText(item.lastMessage.content)
+                      : "No messages yet"}
                   </p>
                 </div>
               </button>
@@ -527,7 +560,7 @@ export function InboxManager({
                               : "rounded-tr-sm bg-primary/10 text-foreground",
                           )}
                         >
-                          {message.content}
+                          {plainText(message.content)}
                         </div>
                       </div>
                     </div>
