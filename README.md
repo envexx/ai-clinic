@@ -5,8 +5,8 @@ administrative questions, book/reschedule/cancel appointments, and hand off to
 staff. Staff use a dashboard to manage the same appointments and conversations.
 
 This repository currently implements **M0 – Foundation**, **M1 – Clinic
-configuration**, **M2 – Booking domain**, **M3 – Knowledge**, and **M4 – Chat
-agent**. The product requirements live in
+configuration**, **M2 – Booking domain**, **M3 – Knowledge**, **M4 – Chat
+agent**, and **M5 – Human desk**. The product requirements live in
 [`PRD_MVP_AI_Clinic_Front_Desk.md`](./PRD_MVP_AI_Clinic_Front_Desk.md) and the
 staged delivery plan in [`PLAN.md`](./PLAN.md).
 
@@ -76,6 +76,8 @@ Seeded demo accounts (password from `SEED_STAFF_PASSWORD`, default `demo-passwor
 | `/my-appointments` | Visitor appointments for this browser session |
 | `/staff/login` | Staff sign-in |
 | `/dashboard` | Staff overview |
+| `/dashboard/inbox` | Conversation inbox: claim, reply, notes, resolve |
+| `/dashboard/appointments` | Appointment list with status transitions |
 | `/dashboard/services` | Manage services (admin only) |
 | `/dashboard/providers` | Manage providers (admin only) |
 | `/dashboard/schedules` | Clinic hours, provider working hours, time off (admin only) |
@@ -112,7 +114,14 @@ routes require an `ADMIN` staff session and enforce same-origin on mutations.
 | `/api/bookings/cancel` | POST | Prepare a cancellation |
 | `/api/actions/[id]/confirm` | POST | Execute a pending action (guest-owned, idempotent) |
 | `/api/my-appointments` | GET | Appointments owned by the guest session |
+| `/api/staff/appointments` | GET | Clinic appointment list (filters) |
 | `/api/staff/appointments/[id]` | PATCH | Staff status transition (audited) |
+| `/api/staff/conversations` | GET | Inbox list |
+| `/api/staff/conversations/[id]` | GET | Conversation detail (messages + notes) |
+| `/api/staff/conversations/[id]/claim` | POST | Atomic claim/takeover |
+| `/api/staff/conversations/[id]/reply` | POST | Staff reply |
+| `/api/staff/conversations/[id]/notes` | POST | Internal note (staff only) |
+| `/api/staff/conversations/[id]/resolve` | POST | Resolve conversation |
 | `/api/admin/knowledge` | GET, POST | List / create knowledge documents |
 | `/api/admin/knowledge/[documentId]` | PATCH | Enable/disable a document |
 | `/api/admin/knowledge/[documentId]/versions` | POST | Add a new draft version |
@@ -143,6 +152,17 @@ routes require an `ADMIN` staff session and enforce same-origin on mutations.
   there is no grounded source.
 - Messages are persisted with idempotency per `clientMessageId`; a retry
   returns the same reply.
+
+### Human desk
+
+- Requesting staff opens a handoff ticket and sets the conversation to
+  `WAITING_HUMAN`; the AI stops replying from that point.
+- Claiming is atomic on the conversation `version`: two staff claiming at once
+  — only one wins, the other gets `VERSION_CONFLICT`. Claiming also cancels the
+  visitor's pending AI actions.
+- Internal notes live in their own table and are never returned by the visitor
+  serializer. Staff replies use role `STAFF` and are visible to the visitor.
+- The inbox polls every 5 seconds, pausing when the tab is hidden.
 
 ### Knowledge retrieval (no external memory service)
 
@@ -179,7 +199,7 @@ src/
     scheduling/            # timezone-aware availability engine
     appointments/          # booking domain: actions, idempotency, create/reschedule/cancel
     knowledge/             # documents, versions, embeddings, pgvector retrieval
-    conversations/         # conversation + message persistence
+    conversations/         # conversation + message persistence, staff desk
     ai/                    # agent, intent, tools, chat orchestration
     audit/                 # audit event writer
   generated/prisma/        # generated client (gitignored)
@@ -209,8 +229,10 @@ docs/SPIKE_RESULTS.md      # M0 verification evidence
   model-driven tool use require the real key.
 - Chat responses are returned in one JSON response; token streaming and the
   Gemini path are implemented but not yet runtime-tested without a key.
-- Human handoff is recorded (conversation status) but the staff inbox that
-  handles it is M5.
+- Local Prisma Postgres is single-connection and unstable under concurrent
+  queries; some paths (dashboard, conversation detail) intentionally run
+  queries sequentially for that reason. Hosted Prisma Postgres removes this.
+- Notification/reminder delivery is out of scope for P0.
 
 ## Documentation
 

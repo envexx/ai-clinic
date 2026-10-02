@@ -291,6 +291,95 @@ async function main() {
     "chat escalates to human handoff",
   );
 
+  // --- human desk ---
+  const handoffConversationId = chatHandoff.data.conversationId;
+  const detail0 = await fetch(
+    `${BASE}/api/staff/conversations/${handoffConversationId}`,
+    { headers: { cookie: staffCookie } },
+  ).then((r) => r.json());
+  assert(
+    detail0.success && detail0.data.conversation.status === "WAITING_HUMAN",
+    "handoff created a ticket and WAITING_HUMAN conversation",
+  );
+
+  const claimRes = await fetch(
+    `${BASE}/api/staff/conversations/${handoffConversationId}/claim`,
+    {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        origin: BASE,
+        cookie: staffCookie,
+      },
+      body: JSON.stringify({
+        expectedVersion: detail0.data.conversation.version,
+      }),
+    },
+  );
+  const claimBody = await claimRes.json();
+  assert(
+    claimRes.ok && claimBody.data.status === "HUMAN_ACTIVE",
+    "staff claims the conversation",
+  );
+
+  const replyRes = await fetch(
+    `${BASE}/api/staff/conversations/${handoffConversationId}/reply`,
+    {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        origin: BASE,
+        cookie: staffCookie,
+      },
+      body: JSON.stringify({ content: "Hello from the front desk." }),
+    },
+  );
+  assert(replyRes.ok, "staff reply sent");
+
+  const noteRes = await fetch(
+    `${BASE}/api/staff/conversations/${handoffConversationId}/notes`,
+    {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        origin: BASE,
+        cookie: staffCookie,
+      },
+      body: JSON.stringify({ content: "Smoke internal note" }),
+    },
+  );
+  assert(noteRes.ok, "internal note added");
+
+  const detail1 = await fetch(
+    `${BASE}/api/staff/conversations/${handoffConversationId}`,
+    { headers: { cookie: staffCookie } },
+  ).then((r) => r.json());
+  assert(
+    detail1.success &&
+      detail1.data.notes.some((note) =>
+        note.content.includes("Smoke internal note"),
+      ),
+    "staff detail exposes internal notes",
+  );
+
+  const visitorHistory = await fetch(`${BASE}/api/chat`, {
+    headers: { cookie: guestCookie },
+  }).then((r) => r.json());
+  assert(
+    !visitorHistory.data.messages.some((message) =>
+      message.content.includes("Smoke internal note"),
+    ),
+    "internal notes never leak to the visitor",
+  );
+
+  const apptList = await fetch(`${BASE}/api/staff/appointments`, {
+    headers: { cookie: staffCookie },
+  }).then((r) => r.json());
+  assert(
+    apptList.success && Array.isArray(apptList.data),
+    "staff lists appointments",
+  );
+
   // --- booking flow ---
   const servicesRes = await fetch(`${BASE}/api/services`).then((r) => r.json());
   assert(

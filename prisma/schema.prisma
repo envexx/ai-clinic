@@ -403,6 +403,12 @@ enum MessageRole {
   ASSISTANT
   TOOL
   SYSTEM
+  STAFF
+}
+
+enum HandoffStatus {
+  OPEN
+  RESOLVED
 }
 
 model Conversation {
@@ -417,10 +423,41 @@ model Conversation {
 
   clinic   Clinic    @relation(fields: [clinicId], references: [id], onDelete: Cascade)
   messages Message[]
+  internalNotes InternalNote[]
+  handoffTickets HandoffTicket[]
 
   @@index([clinicId, status, updatedAt])
   @@index([guestSessionId])
   @@map("conversations")
+}
+
+/// Staff-only notes. Never returned by the visitor serializer.
+model InternalNote {
+  id             String   @id @default(uuid()) @db.Uuid
+  conversationId String   @db.Uuid
+  authorStaffId  String   @db.Uuid
+  content        String
+  createdAt      DateTime @default(now()) @db.Timestamptz
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@map("internal_notes")
+}
+
+model HandoffTicket {
+  id               String        @id @default(uuid()) @db.Uuid
+  conversationId   String        @db.Uuid
+  reason           String
+  status           HandoffStatus @default(OPEN)
+  createdAt        DateTime      @default(now()) @db.Timestamptz
+  resolvedAt       DateTime?     @db.Timestamptz
+  resolvedByStaffId String?      @db.Uuid
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, status])
+  @@map("handoff_tickets")
 }
 
 model Message {
@@ -431,6 +468,7 @@ model Message {
   citations       Json?
   pendingActionId String?     @db.Uuid
   clientMessageId String?
+  authorStaffId   String?     @db.Uuid
   createdAt       DateTime    @default(now()) @db.Timestamptz
 
   conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)

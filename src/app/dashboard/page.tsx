@@ -9,12 +9,18 @@ export default async function DashboardOverviewPage() {
   if (!session) redirect("/staff/login");
   const clinicId = session.staffUser.clinicId;
 
-  const [services, providers, staff, clinic] = await Promise.all([
-    prisma.service.count({ where: { clinicId, active: true } }),
-    prisma.provider.count({ where: { clinicId, active: true } }),
-    prisma.staffUser.count({ where: { clinicId, active: true } }),
-    prisma.clinic.findUnique({ where: { id: clinicId } }),
-  ]);
+  // Sequential on purpose: local Prisma Postgres is single-connection and can
+  // drop the connection under concurrent queries.
+  const services = await prisma.service.count({
+    where: { clinicId, active: true },
+  });
+  const providers = await prisma.provider.count({
+    where: { clinicId, active: true },
+  });
+  const staff = await prisma.staffUser.count({
+    where: { clinicId, active: true },
+  });
+  const clinic = await prisma.clinic.findUnique({ where: { id: clinicId } });
 
   const cards = [
     { label: "Active services", value: services, href: "/dashboard/services" },

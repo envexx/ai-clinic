@@ -305,7 +305,7 @@ Keputusan yang masih perlu persetujuan pemilik: pemilihan plan Prisma Postgres (
 2. Bila spike lulus → kerjakan M0 tasks, akhiri dengan CI hijau.
 3. Baru naik ke M1 → M2, dan seterusnya. **Jangan menyentuh M4 sebelum M2 lulus concurrency gate.**
 
-> Status saat ini: M0–M4 selesai (lihat Progress log di bawah). Berikutnya M5 (human desk). Item terbuka: database Prisma Postgres hosted untuk gate concurrency paralel (AT-08), dan `GEMINI_API_KEY` untuk embedding/LLM sungguhan.
+> Status saat ini: M0–M5 selesai (lihat Progress log di bawah). Berikutnya M6 (demo + QA). Item terbuka: database Prisma Postgres hosted untuk gate concurrency paralel (AT-08), dan `GEMINI_API_KEY` untuk embedding/LLM sungguhan.
 
 ---
 
@@ -391,8 +391,24 @@ Catatan jujur:
 - Respons chat masih satu JSON (belum token streaming). Streaming model menyusul saat key tersedia.
 - Threshold relevansi retrieval dikalibrasi (stopword di fallback lokal + `MIN_SCORE`) agar abstain benar.
 
-### Item terbuka sebelum M5
+### M5 — Human desk: SELESAI (2 Oktober 2026)
 
-- `GEMINI_API_KEY` untuk menguji jalur Gemini (chat) dan embedding semantik.
-- Uji concurrency paralel (AT-08) masih butuh Prisma Postgres hosted.
-- Streaming respons chat (belum diimplementasikan).
+Terverifikasi: `pnpm typecheck` (0 error), `pnpm lint` (0 masalah), `pnpm test` (36 lulus), `pnpm build` (49 route), `pnpm smoke` (39 cek runtime lulus), `pnpm test:integration` (14 lulus, 1 skip).
+
+Yang sudah ada:
+- Model `internal_notes`, `handoff_tickets`; peran pesan `STAFF` + `authorStaffId`.
+- Handoff otomatis membuat tiket (satu tiket open per percakapan) dan menandai `WAITING_HUMAN`; AI berhenti membalas setelah itu (AT-16).
+- Claim atomik berbasis `version` (dua staf bersamaan → satu menang, lawan `VERSION_CONFLICT`, AT-15); claim juga membatalkan pending action AI visitor.
+- Balasan staf (hanya yang di-assign atau admin), catatan internal yang tidak pernah masuk serializer visitor (AT-22).
+- Resolve percakapan + tutup tiket.
+- API staf: inbox, detail, claim, reply, notes, resolve; daftar appointment + transisi status.
+- UI `/dashboard/inbox` (polling 5 detik, pause saat tab tersembunyi) dan `/dashboard/appointments`.
+
+Catatan operasional penting:
+- PGlite lokal **drop koneksi di bawah query konkuren** (`Promise.all` beberapa query). Penyebab ditemukan dan dimitigasi: `connection_limit=1` + serialisasi query pada dashboard dan detail percakapan. Ini memperkuat keputusan untuk memakai Prisma Postgres hosted; dicatat di README.
+
+### Item terbuka sebelum M6
+
+- `GEMINI_API_KEY` untuk menguji jalur Gemini + streaming.
+- Uji concurrency paralel (AT-08) butuh Prisma Postgres hosted.
+- Seed scenario demo + runner evaluasi 40 kasus (M6).

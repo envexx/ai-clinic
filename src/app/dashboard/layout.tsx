@@ -6,6 +6,8 @@ import { readStaffSession } from "@/modules/auth/authorize";
 
 const NAV = [
   { href: "/dashboard", label: "Overview" },
+  { href: "/dashboard/inbox", label: "Inbox" },
+  { href: "/dashboard/appointments", label: "Appointments" },
   { href: "/dashboard/services", label: "Services" },
   { href: "/dashboard/providers", label: "Providers" },
   { href: "/dashboard/schedules", label: "Schedules" },

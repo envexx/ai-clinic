@@ -1,11 +1,11 @@
 import { Prisma } from "@/generated/prisma/client";
-import { MessageRole } from "@/generated/prisma/enums";
+import { ConversationStatus, MessageRole } from "@/generated/prisma/enums";
 import { prisma } from "@/lib/db";
 import {
   appendMessage,
   findAssistantReply,
   getOrCreateConversation,
-  listMessages,
+  listVisitorMessages,
   type SessionRef,
 } from "@/modules/conversations/conversations";
 
@@ -68,6 +68,31 @@ export async function handleChatMessage(
     };
   }
 
+  // AI stops once a human owns the conversation (PRD section 9).
+  if (conversation.status !== ConversationStatus.AI_ACTIVE) {
+    await appendMessage({
+      conversationId: conversation.id,
+      role: MessageRole.USER,
+      content: input.message,
+      clientMessageId: input.clientMessageId,
+    });
+    const reply =
+      "A clinic staff member has this conversation now. Your message was added and they'll reply here.";
+    await appendMessage({
+      conversationId: conversation.id,
+      role: MessageRole.ASSISTANT,
+      content: reply,
+      clientMessageId: `assistant:${input.clientMessageId}`,
+    });
+    return {
+      conversationId: conversation.id,
+      reply,
+      citations: [],
+      pendingAction: null,
+      handoff: true,
+    };
+  }
+
   await appendMessage({
     conversationId: conversation.id,
     role: MessageRole.USER,
@@ -75,7 +100,7 @@ export async function handleChatMessage(
     clientMessageId: input.clientMessageId,
   });
 
-  const history = (await listMessages(conversation.id)).map((message) => ({
+  const history = (await listVisitorMessages(conversation.id)).map((message) => ({
     role: message.role as string,
     content: message.content,
   }));
@@ -108,7 +133,7 @@ export async function handleChatMessage(
 
 export async function getConversationHistory(session: SessionRef) {
   const conversation = await getOrCreateConversation(session);
-  const messages = await listMessages(conversation.id);
+  const messages = await listVisitorMessages(conversation.id);
   return {
     conversationId: conversation.id,
     status: conversation.status,

@@ -622,6 +622,40 @@ export async function confirmPendingAction(
   }
 }
 
+export type StaffAppointmentRow = AppointmentSummary & {
+  visitorName: string;
+  contact: string;
+};
+
+export async function listClinicAppointments(
+  clinicId: string,
+  filters: { status?: AppointmentStatus; from?: string; to?: string },
+): Promise<StaffAppointmentRow[]> {
+  const where: Prisma.AppointmentWhereInput = { clinicId };
+  if (filters.status) where.status = filters.status;
+  if (filters.from || filters.to) {
+    where.startAt = {};
+    if (filters.from) where.startAt.gte = new Date(filters.from);
+    if (filters.to) where.startAt.lte = new Date(filters.to);
+  }
+
+  const appointments = await prisma.appointment.findMany({
+    where,
+    orderBy: { startAt: "asc" },
+    take: 200,
+    include: {
+      provider: true,
+      visitor: { select: { displayName: true, contact: true } },
+    },
+  });
+
+  return appointments.map((appointment) => ({
+    ...toSummary(appointment, appointment.provider.displayName),
+    visitorName: appointment.visitor.displayName,
+    contact: appointment.visitor.contact,
+  }));
+}
+
 export async function listVisitorAppointments(
   session: GuestSessionRef,
 ): Promise<AppointmentSummary[]> {

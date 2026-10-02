@@ -6,7 +6,10 @@ import { ConversationStatus } from "@/generated/prisma/enums";
 import { logger } from "@/lib/logger";
 import { DomainError } from "@/lib/result";
 import { prepareBookingSchema } from "@/modules/appointments/validation";
-import { setConversationStatus } from "@/modules/conversations/conversations";
+import {
+  openHandoffTicket,
+  setConversationStatus,
+} from "@/modules/conversations/conversations";
 import type { KnowledgeCitation } from "@/modules/knowledge/retrieval";
 
 import { classifyIntent } from "./intent";
@@ -98,6 +101,7 @@ async function runFallbackTurn(
 
   if (intent === "handoff") {
     await setConversationStatus(conversationId, ConversationStatus.WAITING_HUMAN);
+    await openHandoffTicket(conversationId, "Visitor requested staff");
     return {
       reply:
         "I've asked the clinic team to assist you. They'll pick up this conversation as soon as someone is available.",
@@ -267,6 +271,7 @@ async function runModelTurn(
 
   if (collected.handoff) {
     await setConversationStatus(conversationId, ConversationStatus.WAITING_HUMAN);
+    await openHandoffTicket(conversationId, "Model requested handoff");
   }
 
   return {
