@@ -1,7 +1,12 @@
 import { logger } from "@/lib/logger";
 
-import { embedText } from "./embeddings";
-import { keywordSearch, vectorSearch, type KnowledgeHit } from "./vector-store";
+import { embedText, isGeminiConfigured } from "./embeddings";
+import {
+  keywordSearch,
+  lexicalSearch,
+  vectorSearch,
+  type KnowledgeHit,
+} from "./vector-store";
 
 export type KnowledgeCitation = {
   documentId: string;
@@ -43,6 +48,13 @@ export async function searchKnowledge(
 ): Promise<KnowledgeCitation[]> {
   const trimmed = query.trim();
   if (!trimmed) return [];
+
+  // Without an embedding provider we use a strict lexical match, which
+  // abstains reliably on unrelated questions.
+  if (!isGeminiConfigured()) {
+    const hits = await lexicalSearch(clinicId, trimmed, limit);
+    return hits.map(toCitation);
+  }
 
   let hits: KnowledgeHit[];
   try {

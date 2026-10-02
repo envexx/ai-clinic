@@ -4,14 +4,28 @@ import { DomainError } from "@/lib/result";
 import type { ProviderInput, ProviderUpdate } from "./validation";
 
 export async function listProviders(clinicId: string) {
-  return prisma.provider.findMany({
+  // Sequential queries on purpose: local Prisma Postgres is single-connection
+  // and drops the connection under concurrent nested reads.
+  const providers = await prisma.provider.findMany({
     where: { clinicId },
     orderBy: [{ active: "desc" }, { displayName: "asc" }],
-    include: {
-      providerServices: { select: { serviceId: true } },
-      workingHours: { orderBy: [{ weekday: "asc" }, { localStart: "asc" }] },
-    },
   });
+  const links = await prisma.providerService.findMany({
+    where: { provider: { clinicId } },
+    select: { providerId: true, serviceId: true },
+  });
+  const hours = await prisma.workingHour.findMany({
+    where: { provider: { clinicId } },
+    orderBy: [{ weekday: "asc" }, { localStart: "asc" }],
+  });
+
+  return providers.map((provider) => ({
+    ...provider,
+    providerServices: links
+      .filter((link) => link.providerId === provider.id)
+      .map((link) => ({ serviceId: link.serviceId })),
+    workingHours: hours.filter((hour) => hour.providerId === provider.id),
+  }));
 }
 
 export async function createProvider(clinicId: string, input: ProviderInput) {

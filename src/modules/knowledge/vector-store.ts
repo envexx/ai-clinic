@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/db";
 
+import { contentTokens } from "./embeddings";
+
 export type KnowledgeHit = {
   documentId: string;
   versionId: string;
@@ -55,6 +57,52 @@ export async function vectorSearch(
     clinicId,
     limit,
   );
+}
+
+/**
+ * Deterministic lexical search used when no embedding provider is configured.
+ * It requires at least half of the query's content tokens to appear in the
+ * document, which makes the assistant abstain on unrelated questions.
+ */
+export async function lexicalSearch(
+  clinicId: string,
+  query: string,
+  limit: number,
+): Promise<KnowledgeHit[]> {
+  const queryTokens = new Set(contentTokens(query));
+  if (queryTokens.size === 0) return [];
+
+  const documents = await prisma.$queryRawUnsafe<KnowledgeHit[]>(
+    `SELECT d.id AS "documentId",
+            v.id AS "versionId",
+            d.title,
+            v."sourceLabel",
+            v.content,
+            0::float8 AS score
+       FROM "knowledge_versions" v
+       JOIN "knowledge_documents" d ON d.id = v."documentId"
+      WHERE d."clinicId" = $1::uuid
+        AND d.active = true
+        AND v."approvalStatus" = 'APPROVED'
+        AND v."indexingStatus" = 'READY'
+        AND d."activeVersionId" = v.id`,
+    clinicId,
+  );
+
+  return documents
+    .map((document) => {
+      const documentTokens = new Set(
+        contentTokens(`${document.title} ${document.content}`),
+      );
+      let shared = 0;
+      for (const token of queryTokens) {
+        if (documentTokens.has(token)) shared += 1;
+      }
+      return { ...document, score: shared / queryTokens.size };
+    })
+    .filter((document) => document.score >= 0.5)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit);
 }
 
 /** Degraded keyword search used when the embedding provider is unavailable. */

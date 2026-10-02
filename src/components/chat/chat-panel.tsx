@@ -170,7 +170,12 @@ export function ChatPanel() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className={`${cardClass} flex max-h-[60vh] flex-col gap-3 overflow-y-auto`}>
+      <div
+        role="log"
+        aria-live="polite"
+        aria-label="Conversation"
+        className={`${cardClass} flex max-h-[60vh] flex-col gap-3 overflow-y-auto`}
+      >
         {messages.length === 0 && (
           <p className="text-sm text-zinc-500">
             Ask about services, prices, opening hours or booking. Try “what are
@@ -224,7 +229,11 @@ export function ChatPanel() {
           </div>
         ))}
 
-        {busy && <p className="self-start text-xs text-zinc-500">Thinking…</p>}
+        {busy && (
+          <p role="status" aria-live="polite" className="self-start text-xs text-zinc-500">
+            Thinking…
+          </p>
+        )}
       </div>
 
       {error && <p className={errorClass}>{error}</p>}

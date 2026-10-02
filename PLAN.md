@@ -305,7 +305,7 @@ Keputusan yang masih perlu persetujuan pemilik: pemilihan plan Prisma Postgres (
 2. Bila spike lulus → kerjakan M0 tasks, akhiri dengan CI hijau.
 3. Baru naik ke M1 → M2, dan seterusnya. **Jangan menyentuh M4 sebelum M2 lulus concurrency gate.**
 
-> Status saat ini: M0–M5 selesai (lihat Progress log di bawah). Berikutnya M6 (demo + QA). Item terbuka: database Prisma Postgres hosted untuk gate concurrency paralel (AT-08), dan `GEMINI_API_KEY` untuk embedding/LLM sungguhan.
+> Status saat ini: M0–M6 selesai (lihat Progress log di bawah). Berikutnya M7 (deploy + handover). Item terbuka: database Prisma Postgres hosted untuk gate concurrency paralel (AT-08), dan `GEMINI_API_KEY` untuk embedding/LLM sungguhan.
 
 ---
 
@@ -407,8 +407,22 @@ Yang sudah ada:
 Catatan operasional penting:
 - PGlite lokal **drop koneksi di bawah query konkuren** (`Promise.all` beberapa query). Penyebab ditemukan dan dimitigasi: `connection_limit=1` + serialisasi query pada dashboard dan detail percakapan. Ini memperkuat keputusan untuk memakai Prisma Postgres hosted; dicatat di README.
 
-### Item terbuka sebelum M6
+### M6 — Demo + QA: SELESAI (2 Oktober 2026)
 
-- `GEMINI_API_KEY` untuk menguji jalur Gemini + streaming.
-- Uji concurrency paralel (AT-08) butuh Prisma Postgres hosted.
-- Seed scenario demo + runner evaluasi 40 kasus (M6).
+Terverifikasi: `pnpm typecheck` (0 error), `pnpm lint` (0 masalah), `pnpm test` (36 lulus), `pnpm test:integration` (16 lulus, 1 skip), `pnpm build` (sukses), `pnpm smoke` (39 cek runtime lulus), `pnpm eval` (quality gate lulus).
+
+Yang sudah ada:
+- Halaman `/demo` terpandu 6 langkah (synthetic data, tanpa secret).
+- Dataset evaluasi berlabel 40 kasus (`evals/knowledge-dataset.json`): 15 answerable, 10 unanswerable, 10 booking, 5 injection; 25 dev / 15 holdout. Label ditetapkan sebelum penilaian.
+- Runner `pnpm eval` melaporkan numerator/denominator dan menegakkan gate PRD: answerable ≥90% dan abstain ≥90%. Hasil saat ini **100% / 100% / 100%**.
+- Failure injection: test memaksa provider embedding gagal (network down) dan memastikan retrieval turun ke keyword tanpa exception atau jawaban palsu.
+- Pencarian fallback lokal dibuat berbasis overlap token (ambang 0.5) agar abstain andal; threshold semantik tetap dipakai saat Gemini aktif.
+- Perbaikan aksesibilitas: `role="log"` + `aria-live` pada chat, `role="status"` pada indikator proses.
+- Mitigasi PGlite: `connection_limit=1` + serialisasi query pada rute rawan (dashboard, daftar provider, detail percakapan).
+
+Catatan jujur: gate evaluasi dijalankan pada fallback offline (tanpa `GEMINI_API_KEY`). Gate yang sama harus dijalankan ulang dengan Gemini untuk menilai jalur semantik.
+
+### Item terbuka sebelum M7
+
+- Deploy: Prisma Postgres produksi + Vercel, `prisma migrate deploy`, backup/recovery, README/video handoff.
+- Jalankan ulang `pnpm eval` dan gate concurrency AT-08 di lingkungan hosted dengan `GEMINI_API_KEY`.

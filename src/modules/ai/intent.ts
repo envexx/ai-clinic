@@ -27,7 +27,7 @@ export function classifyIntent(text: string): AgentIntent {
     return "appointment_status";
   }
   if (
-    /\b(book|booking|appointment|schedule|slot|available|availability|reserve)\b/.test(
+    /\b(book|books|booking|bookings|appointment|appointments|schedule|schedules|scheduling|slot|slots|available|availability|reserve|reservation)\b/.test(
       normalized,
     )
   ) {

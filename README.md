@@ -6,7 +6,8 @@ staff. Staff use a dashboard to manage the same appointments and conversations.
 
 This repository currently implements **M0 – Foundation**, **M1 – Clinic
 configuration**, **M2 – Booking domain**, **M3 – Knowledge**, **M4 – Chat
-agent**, and **M5 – Human desk**. The product requirements live in
+agent**, **M5 – Human desk**, and **M6 – Demo + QA**. The product requirements
+live in
 [`PRD_MVP_AI_Clinic_Front_Desk.md`](./PRD_MVP_AI_Clinic_Front_Desk.md) and the
 staged delivery plan in [`PLAN.md`](./PLAN.md).
 
@@ -61,6 +62,7 @@ Seeded demo accounts (password from `SEED_STAFF_PASSWORD`, default `demo-passwor
 | `pnpm test` | Vitest unit tests (no database needed) |
 | `pnpm test:integration` | Vitest integration tests (needs a running database) |
 | `pnpm smoke` | End-to-end runtime checks against a running server |
+| `pnpm eval` | Evaluate the offline agent + retrieval (needs seeded DB) |
 | `pnpm db:dev` | Local Prisma Postgres server |
 | `pnpm db:migrate` / `db:deploy` | Apply migrations (dev / deploy) |
 | `pnpm db:generate` | Regenerate Prisma Client |
@@ -71,6 +73,7 @@ Seeded demo accounts (password from `SEED_STAFF_PASSWORD`, default `demo-passwor
 | Route | Description |
 |---|---|
 | `/` | Public landing / status |
+| `/demo` | Guided portfolio scenario, synthetic data only |
 | `/chat` | Visitor chat with the front desk assistant |
 | `/book` | Visitor booking flow: slots, contact, confirm |
 | `/my-appointments` | Visitor appointments for this browser session |
@@ -208,6 +211,18 @@ tests/integration/         # database-backed tests (pnpm test:integration)
 docs/SPIKE_RESULTS.md      # M0 verification evidence
 ```
 
+## QA and evaluation
+
+- `pnpm test` — unit tests (no database).
+- `pnpm test:integration` — database-backed tests for booking, knowledge,
+  chat, and the human desk, including the overlap constraint, contested slots,
+  handoff, and a retrieval failure-injection case.
+- `pnpm smoke` — 39 end-to-end runtime checks against a running server.
+- `pnpm eval` — runs the labeled dataset in `evals/knowledge-dataset.json`
+  (15 answerable, 10 unanswerable, 10 booking, 5 injection; 25 dev / 15
+  holdout) and enforces the PRD quality gate: answerable grounded ≥ 90% and
+  abstain ≥ 90%. Current result: 100% / 100% / 100%.
+
 ## Known limitations
 
 - Local Prisma Postgres (PGlite) supports only **one connection**, so it cannot
@@ -233,6 +248,9 @@ docs/SPIKE_RESULTS.md      # M0 verification evidence
   queries; some paths (dashboard, conversation detail) intentionally run
   queries sequentially for that reason. Hosted Prisma Postgres removes this.
 - Notification/reminder delivery is out of scope for P0.
+- The evaluation currently scores the **offline fallback** agent and a lexical
+  retrieval fallback; the gate must be re-run with `GEMINI_API_KEY` to score the
+  semantic (Gemini) path. The deployment gate (M7) is not done yet.
 
 ## Documentation
 
