@@ -211,6 +211,117 @@ async function main() {
     "services admin page renders seeded services",
   );
 
+  // --- booking flow ---
+  const servicesRes = await fetch(`${BASE}/api/services`).then((r) => r.json());
+  assert(
+    servicesRes.success && servicesRes.data.length > 0,
+    "public services are listed",
+  );
+  const service = servicesRes.data[0];
+
+  const availRes = await fetch(
+    `${BASE}/api/availability?serviceId=${service.id}`,
+  ).then((r) => r.json());
+  assert(
+    availRes.success && availRes.data.length > 0,
+    "availability returns slots",
+  );
+  const slot = availRes.data[0];
+
+  const bookingHeaders = {
+    "content-type": "application/json",
+    origin: BASE,
+    cookie: guestCookie,
+  };
+
+  const prepRes = await fetch(`${BASE}/api/bookings`, {
+    method: "POST",
+    headers: bookingHeaders,
+    body: JSON.stringify({
+      serviceId: slot.serviceId,
+      providerId: slot.providerId,
+      startAt: slot.startAt,
+      displayName: "Smoke Visitor",
+      contact: "smoke@example.com",
+      consent: true,
+    }),
+  });
+  const prepBody = await prepRes.json();
+  assert(prepRes.ok && Boolean(prepBody.data?.actionId), "booking prepared as a pending action");
+
+  const idemKey = `smoke-${Date.now()}`;
+  const confirmRes = await fetch(
+    `${BASE}/api/actions/${prepBody.data.actionId}/confirm`,
+    {
+      method: "POST",
+      headers: bookingHeaders,
+      body: JSON.stringify({ idempotencyKey: idemKey }),
+    },
+  );
+  const confirmBody = await confirmRes.json();
+  assert(
+    confirmRes.ok && /^WN-/.test(confirmBody.data.bookingReference),
+    "booking confirmed with a reference",
+  );
+
+  const replayRes = await fetch(
+    `${BASE}/api/actions/${prepBody.data.actionId}/confirm`,
+    {
+      method: "POST",
+      headers: bookingHeaders,
+      body: JSON.stringify({ idempotencyKey: idemKey }),
+    },
+  );
+  const replayBody = await replayRes.json();
+  assert(
+    replayRes.ok && replayBody.data.id === confirmBody.data.id,
+    "confirmation replay is idempotent",
+  );
+
+  const mineRes = await fetch(`${BASE}/api/my-appointments`, {
+    headers: { cookie: guestCookie },
+  }).then((r) => r.json());
+  assert(
+    mineRes.success &&
+      mineRes.data.some((item) => item.id === confirmBody.data.id),
+    "appointment appears in my-appointments",
+  );
+
+  const anonBooking = await fetch(`${BASE}/api/bookings`, {
+    method: "POST",
+    headers: { "content-type": "application/json", origin: BASE },
+    body: JSON.stringify({
+      serviceId: slot.serviceId,
+      providerId: slot.providerId,
+      startAt: slot.startAt,
+      displayName: "Anon",
+      contact: "anon@example.com",
+      consent: true,
+    }),
+  });
+  const anonBody = await anonBooking.json();
+  assert(
+    anonBooking.status === 401 && anonBody.code === "UNAUTHORIZED",
+    "booking requires a guest session",
+  );
+
+  // Cleanup: cancel the smoke appointment to free the slot.
+  const cancelPrep = await fetch(`${BASE}/api/bookings/cancel`, {
+    method: "POST",
+    headers: bookingHeaders,
+    body: JSON.stringify({
+      appointmentId: confirmBody.data.id,
+      expectedVersion: confirmBody.data.version,
+    }),
+  }).then((r) => r.json());
+  if (cancelPrep.success) {
+    await fetch(`${BASE}/api/actions/${cancelPrep.data.actionId}/confirm`, {
+      method: "POST",
+      headers: bookingHeaders,
+      body: JSON.stringify({ idempotencyKey: `${idemKey}-cancel` }),
+    });
+  }
+
   console.log("\nAll smoke checks passed.");
 }
 

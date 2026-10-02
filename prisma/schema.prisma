@@ -39,6 +39,10 @@ model Clinic {
   services      Service[]
   providers     Provider[]
   clinicHours   ClinicHour[]
+  visitors      Visitor[]
+  appointments  Appointment[]
+  pendingActions PendingAction[]
+  auditEvents   AuditEvent[]
 
   @@map("clinics")
 }
@@ -82,7 +86,8 @@ model GuestSession {
   revokedAt DateTime? @db.Timestamptz
   createdAt DateTime  @default(now()) @db.Timestamptz
 
-  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  clinic   Clinic    @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  visitors Visitor[]
 
   @@index([expiresAt])
   @@map("guest_sessions")
@@ -119,6 +124,7 @@ model Service {
 
   clinic           Clinic            @relation(fields: [clinicId], references: [id], onDelete: Cascade)
   providerServices ProviderService[]
+  appointments     Appointment[]
 
   @@unique([clinicId, name])
   @@index([clinicId, active])
@@ -137,6 +143,7 @@ model Provider {
   providerServices   ProviderService[]
   workingHours       WorkingHour[]
   scheduleExceptions ScheduleException[]
+  appointments       Appointment[]
 
   @@unique([clinicId, displayName])
   @@index([clinicId, active])
@@ -185,4 +192,141 @@ model ScheduleException {
 
   @@index([providerId, startsAt, endsAt])
   @@map("schedule_exceptions")
+}
+
+enum AppointmentStatus {
+  CONFIRMED
+  CHECKED_IN
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum PendingActionType {
+  CREATE_BOOKING
+  RESCHEDULE_BOOKING
+  CANCEL_BOOKING
+}
+
+enum PendingActionStatus {
+  PENDING
+  CONSUMED
+  EXPIRED
+  CANCELLED
+}
+
+/// Administrative contact for a booking, scoped to a guest session.
+/// This is not a medical record.
+model Visitor {
+  id             String    @id @default(uuid()) @db.Uuid
+  clinicId       String    @db.Uuid
+  guestSessionId String    @db.Uuid
+  displayName    String
+  contact        String
+  consentAt      DateTime? @db.Timestamptz
+  createdAt      DateTime  @default(now()) @db.Timestamptz
+
+  clinic       Clinic        @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  guestSession GuestSession  @relation(fields: [guestSessionId], references: [id], onDelete: Cascade)
+  appointments Appointment[]
+
+  @@index([guestSessionId])
+  @@map("visitors")
+}
+
+/// Appointment with snapshotted service details so history stays correct even
+/// if the service later changes. The interval [startAt, occupiedEnd) is the
+/// provider's occupied range (service duration plus buffer).
+model Appointment {
+  id            String            @id @default(uuid()) @db.Uuid
+  clinicId      String            @db.Uuid
+  visitorId     String            @db.Uuid
+  serviceId     String            @db.Uuid
+  providerId    String            @db.Uuid
+  bookingReference String         @unique
+
+  // Snapshots
+  serviceName     String
+  durationMinutes Int
+  bufferMinutes   Int
+  priceMinor      Int
+  currency        String
+
+  startAt     DateTime @db.Timestamptz
+  endAt       DateTime @db.Timestamptz
+  occupiedEnd DateTime @db.Timestamptz
+  status      AppointmentStatus @default(CONFIRMED)
+  version     Int      @default(1)
+
+  createdAt   DateTime  @default(now()) @db.Timestamptz
+  updatedAt   DateTime  @updatedAt @db.Timestamptz
+  cancelledAt DateTime? @db.Timestamptz
+  checkedInAt DateTime? @db.Timestamptz
+  completedAt DateTime? @db.Timestamptz
+  noShowAt    DateTime? @db.Timestamptz
+
+  clinic   Clinic   @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  visitor  Visitor  @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+  service  Service  @relation(fields: [serviceId], references: [id])
+  provider Provider @relation(fields: [providerId], references: [id])
+
+  @@index([providerId, startAt, occupiedEnd])
+  @@index([clinicId, status, startAt])
+  @@index([visitorId])
+  @@map("appointments")
+}
+
+/// A versioned, single-use confirmation request. The model may create it; only
+/// the owning session can consume it (PRD section 15).
+model PendingAction {
+  id             String              @id @default(uuid()) @db.Uuid
+  clinicId       String              @db.Uuid
+  type           PendingActionType
+  guestSessionId String              @db.Uuid
+  payload        Json
+  payloadHash    String
+  status         PendingActionStatus @default(PENDING)
+  expiresAt      DateTime            @db.Timestamptz
+  consumedAt     DateTime?           @db.Timestamptz
+  createdAt      DateTime            @default(now()) @db.Timestamptz
+
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  @@index([guestSessionId, status])
+  @@index([expiresAt])
+  @@map("pending_actions")
+}
+
+model IdempotencyRecord {
+  id          String   @id @default(uuid()) @db.Uuid
+  scope       String
+  key         String
+  requestHash String
+  status      String
+  result      Json?
+  createdAt   DateTime @default(now()) @db.Timestamptz
+  updatedAt   DateTime @updatedAt @db.Timestamptz
+
+  @@unique([scope, key])
+  @@map("idempotency_records")
+}
+
+model AuditEvent {
+  id         String   @id @default(uuid()) @db.Uuid
+  clinicId   String   @db.Uuid
+  actorType  String
+  actorId    String?
+  action     String
+  entityType String
+  entityId   String
+  before     Json?
+  after      Json?
+  requestId  String?
+  createdAt  DateTime @default(now()) @db.Timestamptz
+
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  @@index([entityType, entityId, createdAt])
+  @@index([clinicId, action, createdAt])
+  @@map("audit_events")
 }

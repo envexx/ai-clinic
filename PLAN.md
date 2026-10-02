@@ -305,7 +305,7 @@ Keputusan yang masih perlu persetujuan pemilik: pemilihan plan Prisma Postgres (
 2. Bila spike lulus → kerjakan M0 tasks, akhiri dengan CI hijau.
 3. Baru naik ke M1 → M2, dan seterusnya. **Jangan menyentuh M4 sebelum M2 lulus concurrency gate.**
 
-> Status saat ini: M0 dan M1 selesai (lihat Progress log di bawah). Berikutnya M2 (booking domain), dengan satu item terbuka: database Prisma Postgres hosted untuk uji concurrency.
+> Status saat ini: M0–M2 selesai (lihat Progress log di bawah). Berikutnya M3 (knowledge + pgvector). Satu item terbuka: database Prisma Postgres hosted untuk menjalankan gate concurrency paralel (AT-08).
 
 ---
 
@@ -339,6 +339,24 @@ Yang sudah ada:
 
 Catatan: T1.6 (conflict preview terhadap appointment confirmed) belum bisa diimplementasikan karena model appointment baru ada di M2. Validasi perubahan jadwal saat ini mencakup jam klinik dan blok jam kerja lain; aturan konflik dengan appointment akan ditambahkan di M2 bersama locking, agar tidak ada appointment invalid.
 
-### Item terbuka sebelum M2
+### M2 — Booking domain: SELESAI sebagian besar (2 Oktober 2026)
 
-Uji concurrency (AT-08) **belum bisa** dijalankan di Prisma Postgres lokal karena PGlite hanya menerima satu koneksi. Dibutuhkan URL Prisma Postgres hosted (dev + test) sebelum M2.
+Terverifikasi: `pnpm typecheck` (0 error), `pnpm lint` (0 masalah), `pnpm test` (28 lulus), `pnpm build` (33 route), `pnpm smoke` (27 cek runtime lulus), `pnpm test:integration` (5 lulus, 1 skip).
+
+Yang sudah ada:
+- Mesin availability timezone-aware (Luxon): granularity, buffer, minimum notice, horizon, jam kerja, time-off, eligibility provider, DST-safe.
+- Model `visitors`, `appointments`, `pending_actions`, `idempotency_records`, `audit_events`, plus snapshot layanan pada appointment.
+- **Exclusion constraint** `btree_gist` pada `provider + tstzrange(startAt, occupiedEnd)` untuk appointment aktif — terverifikasi menolak overlap di Prisma Postgres lokal.
+- Domain create/reschedule/cancel: satu transaksi (appointment + audit + consumsi action + idempotency), pending action berversi + hash + TTL, idempotent replay, `VERSION_CONFLICT`, transisi status appointment.
+- API: `/api/services`, `/api/availability`, `/api/bookings`, `/api/bookings/reschedule`, `/api/bookings/cancel`, `/api/actions/[id]/confirm`, `/api/my-appointments`, `/api/staff/appointments/[id]`.
+- UI visitor: `/book` (pilih layanan → slot → detail → ringkasan → Confirm) dan `/my-appointments`.
+- Test unit (hashing idempotency, validasi) + integration DB (constraint, prepare+confirm+replay, rebutan slot, 20 percobaan deterministik).
+
+Catatan penting (jujur):
+- Gate concurrency **paralel** (AT-08: 20 request bersamaan) belum dijalankan: PGlite hanya satu koneksi dan crash saat transaksi bersamaan. Test paralel sudah ditulis dan dibalik flag `RUN_CONCURRENCY_GATE=1` untuk dijalankan di Prisma Postgres hosted. Versi deterministik 20 percobaan sudah lulus.
+- T1.6 (tolak perubahan jadwal yang bentrok dengan appointment confirmed) menyusul bersama dashboard appointment staf (M5); kapasitas tetap aman karena exclusion constraint.
+- Reschedule/cancel sudah ada di API/domain tetapi belum ada UI visitor.
+
+### Item terbuka sebelum M3
+
+Uji concurrency paralel (AT-08) memerlukan URL Prisma Postgres hosted. Tidak memblokir M3 (knowledge), yang hanya butuh `pgvector` (sudah aktif).

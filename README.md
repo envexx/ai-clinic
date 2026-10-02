@@ -4,8 +4,8 @@ AI receptionist MVP for a wellness/aesthetics clinic: visitors can ask
 administrative questions, book/reschedule/cancel appointments, and hand off to
 staff. Staff use a dashboard to manage the same appointments and conversations.
 
-This repository currently implements **M0 – Foundation** and **M1 – Clinic
-configuration**. The product requirements live in
+This repository currently implements **M0 – Foundation**, **M1 – Clinic
+configuration**, and **M2 – Booking domain**. The product requirements live in
 [`PRD_MVP_AI_Clinic_Front_Desk.md`](./PRD_MVP_AI_Clinic_Front_Desk.md) and the
 staged delivery plan in [`PLAN.md`](./PLAN.md).
 
@@ -57,7 +57,8 @@ Seeded demo accounts (password from `SEED_STAFF_PASSWORD`, default `demo-passwor
 | `pnpm build` / `pnpm start` | Production build / serve |
 | `pnpm typecheck` | `tsc --noEmit` |
 | `pnpm lint` | ESLint |
-| `pnpm test` | Vitest unit tests |
+| `pnpm test` | Vitest unit tests (no database needed) |
+| `pnpm test:integration` | Vitest integration tests (needs a running database) |
 | `pnpm smoke` | End-to-end runtime checks against a running server |
 | `pnpm db:dev` | Local Prisma Postgres server |
 | `pnpm db:migrate` / `db:deploy` | Apply migrations (dev / deploy) |
@@ -69,6 +70,8 @@ Seeded demo accounts (password from `SEED_STAFF_PASSWORD`, default `demo-passwor
 | Route | Description |
 |---|---|
 | `/` | Public landing / status |
+| `/book` | Visitor booking flow: slots, contact, confirm |
+| `/my-appointments` | Visitor appointments for this browser session |
 | `/staff/login` | Staff sign-in |
 | `/dashboard` | Staff overview |
 | `/dashboard/services` | Manage services (admin only) |
@@ -98,6 +101,24 @@ routes require an `ADMIN` staff session and enforce same-origin on mutations.
 | `/api/admin/schedules/[providerId]` | GET, PUT | Provider working hours + time off |
 | `/api/admin/schedule-exceptions` | POST | Add time off |
 | `/api/admin/schedule-exceptions/[id]` | DELETE | Remove time off |
+| `/api/services` | GET | Public list of active services |
+| `/api/availability` | GET | Free slots for a service (no patient data) |
+| `/api/bookings` | POST | Prepare a booking (creates a pending action) |
+| `/api/bookings/reschedule` | POST | Prepare a reschedule |
+| `/api/bookings/cancel` | POST | Prepare a cancellation |
+| `/api/actions/[id]/confirm` | POST | Execute a pending action (guest-owned, idempotent) |
+| `/api/my-appointments` | GET | Appointments owned by the guest session |
+| `/api/staff/appointments/[id]` | PATCH | Staff status transition (audited) |
+
+### Booking model
+
+- Booking never happens from a model's text: the server creates a versioned,
+  hashed, single-use **pending action**; only the owning guest session can
+  confirm it, with an idempotency key.
+- Overlaps are prevented at two levels: an application check and a Postgres
+  **exclusion constraint** on `provider + tstzrange(startAt, occupiedEnd)` for
+  active appointments (verified working on local Prisma Postgres).
+- Every mutation writes an `audit_events` row in the same transaction.
 
 ## Project structure
 
@@ -110,13 +131,19 @@ scripts/
   smoke.mjs                # runtime smoke test
 src/
   app/                     # App Router pages + API routes
-  components/staff/        # client components for the staff dashboard
+  components/
+    booking/               # visitor booking flow (client)
+    staff/                 # staff dashboard components (client)
   lib/                     # db, env, result envelope, http, logger, rate limit
   modules/
     auth/                  # guest + staff sessions, password hashing, RBAC
     clinic/                # settings, services, providers, schedules, validation
+    scheduling/            # timezone-aware availability engine
+    appointments/          # booking domain: actions, idempotency, create/reschedule/cancel
+    audit/                 # audit event writer
   generated/prisma/        # generated client (gitignored)
 tests/                     # Vitest unit tests
+tests/integration/         # database-backed tests (pnpm test:integration)
 docs/SPIKE_RESULTS.md      # M0 verification evidence
 ```
 
@@ -126,10 +153,17 @@ docs/SPIKE_RESULTS.md      # M0 verification evidence
   be used for the concurrency gate. Use hosted Prisma Postgres for that.
 - Rate limiting is in-memory (per instance); persistent limiting is required
   before production.
-- Schedule writes currently validate against clinic hours and other working
-  blocks. The "reject changes that conflict with a confirmed appointment" rule
-  (PRD section 6) lands in M2 together with the appointment model and locking.
-- Availability, booking, knowledge, and AI are M2–M4.
+- The **true parallel concurrency gate** (`AT-08`: 20 simultaneous requests for
+  one slot) is written but skipped by default, because local Prisma Postgres is
+  single-connection and crashes under concurrent transactions. Run it against
+  hosted Prisma Postgres with `RUN_CONCURRENCY_GATE=1 pnpm test:integration`.
+  A deterministic 20-attempt test passes locally today.
+- Schedule changes are not yet rejected when they conflict with a **confirmed
+  appointment** (PRD section 6); that check arrives with the staff appointment
+  dashboard in M5. Capacity conflicts are still impossible because of the
+  exclusion constraint.
+- Reschedule/cancel have API and domain support but no visitor UI yet.
+- Knowledge retrieval and AI are M3–M4.
 
 ## Documentation
 
