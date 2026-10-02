@@ -4,8 +4,8 @@ import { prisma } from "@/lib/db";
 
 export type SessionRef = { id: string; clinicId: string };
 
-export async function getOrCreateConversation(session: SessionRef) {
-  const existing = await prisma.conversation.findFirst({
+export async function findOpenConversation(session: SessionRef) {
+  return prisma.conversation.findFirst({
     where: {
       guestSessionId: session.id,
       status: {
@@ -18,6 +18,10 @@ export async function getOrCreateConversation(session: SessionRef) {
     },
     orderBy: { updatedAt: "desc" },
   });
+}
+
+export async function getOrCreateConversation(session: SessionRef) {
+  const existing = await findOpenConversation(session);
   if (existing) return existing;
 
   return prisma.conversation.create({
@@ -54,6 +58,15 @@ export async function findAssistantReply(
 ) {
   return prisma.message.findFirst({
     where: { conversationId, clientMessageId: `assistant:${clientMessageId}` },
+  });
+}
+
+export async function findUserMessage(
+  conversationId: string,
+  clientMessageId: string,
+) {
+  return prisma.message.findFirst({
+    where: { conversationId, clientMessageId },
   });
 }
 

@@ -48,10 +48,17 @@ async function run() {
     }
     await page.goto(`${BASE}${path}`, { waitUntil: "networkidle" });
     if (options.clickFirstConversation) {
-      const item = page.locator('[data-testid="conversation-item"]').first();
-      if (await item.count()) {
-        await item.click();
-        await page.waitForTimeout(1200);
+      const item = page
+        .locator('[data-testid="conversation-item"]', {
+          hasNotText: "No messages yet",
+        })
+        .first();
+      const target = (await item.count())
+        ? item
+        : page.locator('[data-testid="conversation-item"]').first();
+      if (await target.count()) {
+        await target.click();
+        await page.waitForTimeout(1400);
       }
     }
     await page.waitForTimeout(900);

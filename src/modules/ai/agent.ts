@@ -52,7 +52,9 @@ Rules:
 - For medical questions, do not diagnose or give treatment advice; offer to connect them with clinic staff.
 - Ask a clarifying question when the service or the date/time is ambiguous.
 - Keep replies short. Show times in the clinic timezone (Asia/Dubai).
-- Use at most 6 tool steps.`;
+- When you hand off to staff, do not promise a specific response time.
+- Reply in plain text. Do not use markdown formatting (no asterisks, no headings).
+- Use at most 8 tool steps.`;
 
 type Collected = {
   citations: KnowledgeCitation[];
@@ -266,8 +268,26 @@ async function runModelTurn(
     system: SYSTEM_PROMPT,
     messages,
     tools: buildTools(ctx, collected),
-    stopWhen: stepCountIs(6),
+    stopWhen: stepCountIs(8),
   });
+
+  // The model sometimes ends a step with only tool calls. Ask once more for a
+  // plain-text answer so the visitor always receives a real reply.
+  let replyText = result.text.trim();
+  if (!replyText) {
+    const followUp = await generateText({
+      model: google(modelId),
+      system: SYSTEM_PROMPT,
+      messages: [
+        ...messages,
+        {
+          role: "user",
+          content: "Please answer my last message now, in plain text.",
+        },
+      ],
+    });
+    replyText = followUp.text.trim();
+  }
 
   if (collected.handoff) {
     await setConversationStatus(conversationId, ConversationStatus.WAITING_HUMAN);
@@ -275,7 +295,9 @@ async function runModelTurn(
   }
 
   return {
-    reply: result.text || "Sorry, I didn't catch that. Could you rephrase?",
+    reply:
+      replyText ||
+      "I can't answer that from our records. You can book at /book or ask to speak with staff.",
     citations: dedupeCitations(collected.citations),
     pendingAction: collected.pendingAction,
     handoff: collected.handoff,

@@ -44,7 +44,7 @@ type ChatReply = {
 };
 
 type HistoryResponse = {
-  conversationId: string;
+  conversationId: string | null;
   status: string;
   messages: {
     id: string;

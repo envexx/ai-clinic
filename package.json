@@ -21,7 +21,8 @@
     "db:deploy": "prisma migrate deploy",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "seed:conversations": "tsx scripts/seed-conversations.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.87",

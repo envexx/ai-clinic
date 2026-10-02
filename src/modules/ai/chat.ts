@@ -4,6 +4,8 @@ import { prisma } from "@/lib/db";
 import {
   appendMessage,
   findAssistantReply,
+  findOpenConversation,
+  findUserMessage,
   getOrCreateConversation,
   listVisitorMessages,
   type SessionRef,
@@ -70,12 +72,15 @@ export async function handleChatMessage(
 
   // AI stops once a human owns the conversation (PRD section 9).
   if (conversation.status !== ConversationStatus.AI_ACTIVE) {
-    await appendMessage({
-      conversationId: conversation.id,
-      role: MessageRole.USER,
-      content: input.message,
-      clientMessageId: input.clientMessageId,
-    });
+    const already = await findUserMessage(conversation.id, input.clientMessageId);
+    if (!already) {
+      await appendMessage({
+        conversationId: conversation.id,
+        role: MessageRole.USER,
+        content: input.message,
+        clientMessageId: input.clientMessageId,
+      });
+    }
     const reply =
       "A clinic staff member has this conversation now. Your message was added and they'll reply here.";
     await appendMessage({
@@ -93,12 +98,19 @@ export async function handleChatMessage(
     };
   }
 
-  await appendMessage({
-    conversationId: conversation.id,
-    role: MessageRole.USER,
-    content: input.message,
-    clientMessageId: input.clientMessageId,
-  });
+  // Only persist the visitor message once, so retries stay idempotent.
+  const existingUser = await findUserMessage(
+    conversation.id,
+    input.clientMessageId,
+  );
+  if (!existingUser) {
+    await appendMessage({
+      conversationId: conversation.id,
+      role: MessageRole.USER,
+      content: input.message,
+      clientMessageId: input.clientMessageId,
+    });
+  }
 
   const history = (await listVisitorMessages(conversation.id)).map((message) => ({
     role: message.role as string,
@@ -132,7 +144,11 @@ export async function handleChatMessage(
 }
 
 export async function getConversationHistory(session: SessionRef) {
-  const conversation = await getOrCreateConversation(session);
+  // Reading history must not create an empty conversation.
+  const conversation = await findOpenConversation(session);
+  if (!conversation) {
+    return { conversationId: null, status: "NONE", messages: [] };
+  }
   const messages = await listVisitorMessages(conversation.id);
   return {
     conversationId: conversation.id,

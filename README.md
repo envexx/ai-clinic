@@ -42,12 +42,12 @@ pnpm db:dev               # start local Prisma Postgres (keep it running)
 ports). Copy them into `.env`.
 
 ```bash
-pnpm prisma migrate reset --force   # apply migrations + seed demo data
+pnpm prisma migrate reset --force   # apply migrations + seed clinic data
 pnpm prisma generate                # generate Prisma Client
 pnpm dev                            # http://localhost:3000
 ```
 
-Seeded demo accounts (password from `SEED_STAFF_PASSWORD`, default `demo-password`):
+Seeded staff accounts (password from `SEED_STAFF_PASSWORD`, default `demo-password`):
 
 - `admin@wellnest.demo` (ADMIN)
 - `frontdesk@wellnest.demo` (RECEPTIONIST)
@@ -68,14 +68,14 @@ Seeded demo accounts (password from `SEED_STAFF_PASSWORD`, default `demo-passwor
 | `pnpm db:dev` | Local Prisma Postgres server |
 | `pnpm db:migrate` / `db:deploy` | Apply migrations (dev / deploy) |
 | `pnpm db:generate` | Regenerate Prisma Client |
-| `pnpm db:seed` | Seed demo data |
+| `pnpm db:seed` | Seed the clinic profile, staff, services and knowledge |
+| `pnpm seed:conversations` | Create 3 realistic conversations answered by Gemini (needs `GEMINI_API_KEY`) |
 
 ## Pages
 
 | Route | Description |
 |---|---|
 | `/` | Public landing / status |
-| `/demo` | Guided portfolio scenario, synthetic data only |
 | `/chat` | Visitor chat with the front desk assistant |
 | `/book` | Visitor booking flow: slots, contact, confirm |
 | `/my-appointments` | Visitor appointments for this browser session |
@@ -189,7 +189,7 @@ routes require an `ADMIN` staff session and enforce same-origin on mutations.
 prisma/
   schema.prisma            # domain schema
   migrations/              # versioned SQL (incl. pgvector extension)
-  seed.ts                  # demo clinic + staff
+  seed.ts                  # clinic profile, staff, services, knowledge
 scripts/
   smoke.mjs                # runtime smoke test
 src/

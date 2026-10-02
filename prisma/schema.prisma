@@ -23,6 +23,12 @@ model Clinic {
   timezone String @default("Asia/Dubai")
   currency String @default("AED")
 
+  // Public contact details.
+  address String?
+  phone   String?
+  email   String?
+  website String?
+
   // Booking policy (PRD section 6). Durations are minutes.
   slotGranularityMinutes     Int @default(15)
   bookingHorizonDays         Int @default(30)
@@ -137,6 +143,7 @@ model Provider {
   id          String   @id @default(uuid()) @db.Uuid
   clinicId    String   @db.Uuid
   displayName String
+  specialty   String?
   active      Boolean  @default(true)
   createdAt   DateTime @default(now()) @db.Timestamptz
   updatedAt   DateTime @updatedAt @db.Timestamptz

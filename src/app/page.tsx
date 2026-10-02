@@ -1,7 +1,10 @@
 ﻿import Link from "next/link";
 import {
   CalendarCheck,
+  Mail,
+  MapPin,
   MessageSquareText,
+  Phone,
   ShieldCheck,
   Users,
 } from "lucide-react";
@@ -70,12 +73,6 @@ export default async function Home() {
           >
             Book
           </Link>
-          <Link
-            href="/demo"
-            className="rounded-md px-3 py-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-          >
-            Demo
-          </Link>
           <Button
             variant="outline"
             size="sm"
@@ -111,6 +108,21 @@ export default async function Home() {
             >
               Book an appointment
             </Button>
+          </div>
+
+          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+            <span className="flex items-center gap-2">
+              <MapPin className="size-4" strokeWidth={1.75} />
+              {clinic?.address ?? "Jumeirah Beach Road, Dubai, UAE"}
+            </span>
+            <span className="flex items-center gap-2">
+              <Phone className="size-4" strokeWidth={1.75} />
+              {clinic?.phone ?? "+971 4 555 0134"}
+            </span>
+            <span className="flex items-center gap-2">
+              <Mail className="size-4" strokeWidth={1.75} />
+              {clinic?.email ?? "hello@wellnest.ae"}
+            </span>
           </div>
         </div>
       </section>
@@ -199,13 +211,13 @@ export default async function Home() {
 
       <footer className="border-t">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3 px-6 py-6 text-sm text-muted-foreground">
-          <p>Portfolio demo — synthetic data only.</p>
+          <p>{clinic?.address ?? "Jumeirah Beach Road, Dubai, UAE"}</p>
           <div className="flex gap-4">
             <Link className="hover:text-foreground" href="/my-appointments">
               My appointments
             </Link>
-            <Link className="hover:text-foreground" href="/demo">
-              Guided demo
+            <Link className="hover:text-foreground" href="/staff/login">
+              Staff sign in
             </Link>
           </div>
         </div>

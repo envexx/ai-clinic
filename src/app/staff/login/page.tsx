@@ -64,7 +64,7 @@ export default function StaffLoginPage() {
 
         <div className="rounded-xl border bg-card p-6 shadow-sm">
           <p className="text-xs font-medium text-muted-foreground">
-            Demo accounts — pick one to fill the form
+            Accounts — pick one to fill the form
           </p>
           <div className="mt-3 grid grid-cols-2 gap-2">
             {DEMO_ACCOUNTS.map((account) => {
@@ -139,8 +139,9 @@ export default function StaffLoginPage() {
 
         <div className="mt-5 flex flex-col items-center gap-1 text-xs text-muted-foreground">
           <p>
-            Credentials are pre-filled for the demo. Real deployments change
-            <span className="font-mono"> SEED_STAFF_PASSWORD</span>.
+            Credentials are pre-filled for local sign-in. Set
+            <span className="font-mono"> SEED_STAFF_PASSWORD</span> to change
+            them.
           </p>
           <Link
             href="/"
