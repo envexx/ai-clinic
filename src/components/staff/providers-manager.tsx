@@ -85,17 +85,17 @@ export function ProvidersManager({ providers }: { providers: ProviderRow[] }) {
       <div className={cardClass}>
         <h2 className="text-lg font-semibold">Providers</h2>
         {providers.length === 0 ? (
-          <p className="mt-3 text-sm text-muted">No providers yet.</p>
+          <p className="mt-3 text-sm text-muted-foreground">No providers yet.</p>
         ) : (
           <ul className="mt-3 flex flex-col gap-2">
             {providers.map((provider) => (
               <li
                 key={provider.id}
-                className="flex items-center justify-between gap-2 rounded-lg border border-line px-3 py-2 "
+                className="flex items-center justify-between gap-2 rounded-lg border border-border px-3 py-2 "
               >
                 <span className="text-sm font-medium">
                   {provider.displayName}{" "}
-                  <span className="text-muted">
+                  <span className="text-muted-foreground">
                     ({provider.active ? "Active" : "Inactive"})
                   </span>
                 </span>

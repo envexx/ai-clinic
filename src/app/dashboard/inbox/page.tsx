@@ -6,9 +6,10 @@ export default async function InboxPage() {
   if (!session) return null;
 
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Inbox</h1>
-      <InboxManager staffId={session.staffUser.id} />
-    </div>
+    <InboxManager
+      staffId={session.staffUser.id}
+      staffRole={session.staffUser.role}
+      staffEmail={session.staffUser.email}
+    />
   );
 }

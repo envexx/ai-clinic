@@ -201,7 +201,7 @@ export function ServicesManager({
         </div>
 
         <fieldset className="mt-4">
-          <legend className="text-xs font-medium uppercase tracking-wide text-muted">
+          <legend className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             Eligible providers
           </legend>
           <div className="mt-2 flex flex-wrap gap-3">
@@ -219,7 +219,7 @@ export function ServicesManager({
               </label>
             ))}
             {providers.length === 0 && (
-              <span className="text-sm text-muted">
+              <span className="text-sm text-muted-foreground">
                 Add a provider first.
               </span>
             )}
@@ -248,11 +248,11 @@ export function ServicesManager({
       <div className={cardClass}>
         <h2 className="text-lg font-semibold">Services</h2>
         {services.length === 0 ? (
-          <p className="mt-3 text-sm text-muted">No services yet.</p>
+          <p className="mt-3 text-sm text-muted-foreground">No services yet.</p>
         ) : (
           <div className="mt-3 overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="text-xs uppercase tracking-wide text-muted">
+              <thead className="text-xs uppercase tracking-wide text-muted-foreground">
                 <tr>
                   <th className="py-2 pr-4">Name</th>
                   <th className="py-2 pr-4">Duration</th>
@@ -267,7 +267,7 @@ export function ServicesManager({
                 {services.map((service) => (
                   <tr
                     key={service.id}
-                    className="border-t border-line "
+                    className="border-t border-border "
                   >
                     <td className="py-2 pr-4 font-medium">{service.name}</td>
                     <td className="py-2 pr-4">{service.durationMinutes} min</td>

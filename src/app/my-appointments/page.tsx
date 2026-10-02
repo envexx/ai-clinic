@@ -37,14 +37,14 @@ export default async function MyAppointmentsPage() {
         <h1 className="text-2xl font-semibold tracking-tight">
           My appointments
         </h1>
-        <p className="mt-1 text-sm text-muted">
+        <p className="mt-1 text-sm text-muted-foreground">
           Appointments are linked to this browser session. On another device,
           please contact the clinic.
         </p>
       </header>
 
       {appointments.length === 0 ? (
-        <div className="rounded-2xl border border-line p-6 text-sm text-muted ">
+        <div className="rounded-2xl border border-border p-6 text-sm text-muted-foreground ">
           No appointments yet.{" "}
           <Link
             className="text-blue-600 underline-offset-4 hover:underline dark:text-blue-400"
@@ -59,20 +59,20 @@ export default async function MyAppointmentsPage() {
           {appointments.map((appointment) => (
             <li
               key={appointment.id}
-              className="rounded-2xl border border-line p-4 "
+              className="rounded-2xl border border-border p-4 "
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="font-mono text-sm font-semibold">
                   {appointment.bookingReference}
                 </span>
-                <span className="text-xs font-medium uppercase tracking-wide text-muted">
+                <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   {appointment.status}
                 </span>
               </div>
               <p className="mt-1 text-sm">
                 {appointment.serviceName} with {appointment.providerName}
               </p>
-              <p className="text-sm text-muted">
+              <p className="text-sm text-muted-foreground">
                 {formatRange(appointment.startAt, appointment.endAt)}
               </p>
             </li>

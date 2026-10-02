@@ -42,3 +42,6 @@ next-env.d.ts
 
 # prisma generated client (recreated by `prisma generate`)
 /src/generated/prisma
+
+# local verification artifacts (screenshots)
+/artifacts

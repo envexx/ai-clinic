@@ -49,21 +49,21 @@ export default function DemoPage() {
         <h1 className="text-3xl font-semibold tracking-tight">
           AI Clinic Front Desk â€” guided scenario
         </h1>
-        <p className="text-muted ">
+        <p className="text-muted-foreground ">
           A five-minute walkthrough. All patient data is synthetic. No secrets
           are shown on this page.
         </p>
       </header>
 
-      <section className="rounded-2xl border border-line p-6 ">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
+      <section className="rounded-2xl border border-border p-6 ">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           Staff demo accounts
         </h2>
         <ul className="mt-3 space-y-1 font-mono text-sm">
           <li>admin@wellnest.demo (ADMIN)</li>
           <li>frontdesk@wellnest.demo (RECEPTIONIST)</li>
         </ul>
-        <p className="mt-2 text-sm text-muted">
+        <p className="mt-2 text-sm text-muted-foreground">
           Password: value of your local <span className="font-mono">SEED_STAFF_PASSWORD</span>{" "}
           (default <span className="font-mono">demo-password</span>).
         </p>
@@ -73,14 +73,14 @@ export default function DemoPage() {
         {STEPS.map((step) => (
           <li
             key={step.title}
-            className="rounded-2xl border border-line p-5 "
+            className="rounded-2xl border border-border p-5 "
           >
             <h3 className="font-semibold">{step.title}</h3>
-            <p className="mt-1 text-sm text-muted ">
+            <p className="mt-1 text-sm text-muted-foreground ">
               {step.body}
             </p>
             <Link
-              className="mt-3 inline-flex items-center justify-center rounded-lg border border-line px-3 py-1.5 text-sm font-medium text-ink transition-colors hover:bg-paper   "
+              className="mt-3 inline-flex items-center justify-center rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-background   "
               href={step.href}
             >
               {step.cta}
@@ -89,11 +89,11 @@ export default function DemoPage() {
         ))}
       </ol>
 
-      <section className="rounded-2xl border border-line p-6 text-sm ">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
+      <section className="rounded-2xl border border-border p-6 text-sm ">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           Notes and limitations
         </h2>
-        <ul className="mt-3 list-disc space-y-1 pl-5 text-muted ">
+        <ul className="mt-3 list-disc space-y-1 pl-5 text-muted-foreground ">
           <li>
             Without a <span className="font-mono">GEMINI_API_KEY</span>, the chat
             uses a deterministic fallback agent and embeddings use a lexical

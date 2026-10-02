@@ -184,11 +184,11 @@ export function AppointmentsManager() {
 
       <div className={cardClass}>
         {rows.length === 0 ? (
-          <p className="text-sm text-muted">No appointments.</p>
+          <p className="text-sm text-muted-foreground">No appointments.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="text-xs uppercase tracking-wide text-muted">
+              <thead className="text-xs uppercase tracking-wide text-muted-foreground">
                 <tr>
                   <th className="py-2 pr-4">Reference</th>
                   <th className="py-2 pr-4">Visitor</th>
@@ -203,14 +203,14 @@ export function AppointmentsManager() {
                 {rows.map((row) => (
                   <tr
                     key={row.id}
-                    className="border-t border-line "
+                    className="border-t border-border "
                   >
                     <td className="py-2 pr-4 font-mono">
                       {row.bookingReference}
                     </td>
                     <td className="py-2 pr-4">
                       {row.visitorName}
-                      <span className="block text-xs text-muted">
+                      <span className="block text-xs text-muted-foreground">
                         {row.contact}
                       </span>
                     </td>

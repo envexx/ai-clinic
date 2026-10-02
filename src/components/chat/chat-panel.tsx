@@ -177,7 +177,7 @@ export function ChatPanel() {
         className={`${cardClass} flex max-h-[60vh] flex-col gap-3 overflow-y-auto`}
       >
         {messages.length === 0 && (
-          <p className="text-sm text-muted">
+          <p className="text-sm text-muted-foreground">
             Ask about services, prices, opening hours or booking. Try â€œwhat are
             your opening hours?â€ or â€œhow much is a dental cleaning?â€.
           </p>
@@ -188,15 +188,15 @@ export function ChatPanel() {
             key={message.id}
             className={
               message.role === "USER"
-                ? "max-w-[85%] self-end rounded-2xl rounded-br-md bg-primary px-4 py-2.5 text-sm text-primary-fg"
-                : "max-w-[85%] self-start rounded-2xl rounded-bl-md border border-line bg-surface px-4 py-2.5 text-sm"
+                ? "max-w-[85%] self-end rounded-2xl rounded-br-md bg-primary px-4 py-2.5 text-sm text-primary-foreground"
+                : "max-w-[85%] self-start rounded-2xl rounded-bl-md border border-border bg-card px-4 py-2.5 text-sm"
             }
           >
             <p className="whitespace-pre-wrap">{message.content}</p>
 
             {message.citations.length > 0 && (
-              <div className="mt-2 flex flex-col gap-1 border-t border-line pt-2 text-xs ">
-                <span className="font-medium uppercase tracking-wide text-muted">
+              <div className="mt-2 flex flex-col gap-1 border-t border-border pt-2 text-xs ">
+                <span className="font-medium uppercase tracking-wide text-muted-foreground">
                   Sources
                 </span>
                 {message.citations.map((citation) => (
@@ -209,7 +209,7 @@ export function ChatPanel() {
             )}
 
             {message.pendingAction && (
-              <div className="mt-2 rounded-lg border border-line bg-surface p-2 text-xs  ">
+              <div className="mt-2 rounded-lg border border-border bg-card p-2 text-xs  ">
                 <p className="font-medium">
                   {message.pendingAction.type.replace(/_/g, " ").toLowerCase()}
                 </p>
@@ -230,7 +230,7 @@ export function ChatPanel() {
         ))}
 
         {busy && (
-          <p role="status" aria-live="polite" className="self-start text-xs text-muted">
+          <p role="status" aria-live="polite" className="self-start text-xs text-muted-foreground">
             Thinkingâ€¦
           </p>
         )}

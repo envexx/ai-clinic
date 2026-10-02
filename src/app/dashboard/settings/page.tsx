@@ -7,7 +7,7 @@ export default async function SettingsPage() {
   if (!session) return null;
   if (session.staffUser.role !== "ADMIN") {
     return (
-      <p className="text-sm text-muted">
+      <p className="text-sm text-muted-foreground">
         Only clinic admins can change settings.
       </p>
     );

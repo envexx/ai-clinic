@@ -11,7 +11,7 @@ export default async function SchedulesPage() {
   if (!session) return null;
   if (session.staffUser.role !== "ADMIN") {
     return (
-      <p className="text-sm text-muted">
+      <p className="text-sm text-muted-foreground">
         Only clinic admins can manage schedules.
       </p>
     );

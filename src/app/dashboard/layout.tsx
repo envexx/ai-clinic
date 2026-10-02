@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { DashboardNav } from "@/components/staff/dashboard-nav";
@@ -14,19 +14,19 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-6 py-10 lg:flex-row">
+    <div className="mx-auto flex w-full max-w-[96rem] flex-1 flex-col gap-8 px-6 py-10 lg:flex-row">
       <aside className="flex flex-col gap-6 lg:w-60 lg:shrink-0">
         <div>
           <Link
             href="/"
-            className="font-display text-lg font-semibold tracking-tight"
+            className="text-lg font-semibold tracking-tight"
           >
             WellNest
           </Link>
-          <p className="mt-2 text-sm font-medium text-ink">
+          <p className="mt-2 text-sm font-medium text-foreground">
             {session.staffUser.email}
           </p>
-          <p className="text-xs uppercase tracking-wide text-muted">
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">
             {session.staffUser.role}
           </p>
         </div>

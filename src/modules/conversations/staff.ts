@@ -9,7 +9,23 @@ import { writeAudit } from "@/modules/audit/audit";
 
 export type StaffRef = { id: string; clinicId: string; role: string };
 
-export async function listInbox(clinicId: string, status?: ConversationStatus) {
+export type InboxItem = {
+  id: string;
+  status: ConversationStatus;
+  assignedStaffId: string | null;
+  version: number;
+  updatedAt: string;
+  createdAt: string;
+  messageCount: number;
+  contactName: string;
+  contact: string | null;
+  lastMessage: { role: MessageRole; content: string; createdAt: string } | null;
+};
+
+export async function listInbox(
+  clinicId: string,
+  status?: ConversationStatus,
+): Promise<InboxItem[]> {
   const conversations = await prisma.conversation.findMany({
     where: { clinicId, ...(status ? { status } : {}) },
     orderBy: { updatedAt: "desc" },
@@ -23,20 +39,64 @@ export async function listInbox(clinicId: string, status?: ConversationStatus) {
     },
   });
 
-  return conversations.map((conversation) => ({
-    id: conversation.id,
-    status: conversation.status,
-    assignedStaffId: conversation.assignedStaffId,
-    version: conversation.version,
-    updatedAt: conversation.updatedAt.toISOString(),
-    lastMessage: conversation.messages[0]
-      ? {
-          role: conversation.messages[0].role,
-          content: conversation.messages[0].content,
-          createdAt: conversation.messages[0].createdAt.toISOString(),
-        }
-      : null,
-  }));
+  const conversationIds = conversations.map((conversation) => conversation.id);
+  const guestSessionIds = conversations.map(
+    (conversation) => conversation.guestSessionId,
+  );
+
+  const counts = conversationIds.length
+    ? await prisma.message.groupBy({
+        by: ["conversationId"],
+        where: { conversationId: { in: conversationIds } },
+        _count: { _all: true },
+      })
+    : [];
+  const countByConversation = new Map(
+    counts.map((row) => [row.conversationId, row._count._all]),
+  );
+
+  const visitors = guestSessionIds.length
+    ? await prisma.visitor.findMany({
+        where: { guestSessionId: { in: guestSessionIds } },
+        orderBy: { createdAt: "desc" },
+        select: { guestSessionId: true, displayName: true, contact: true },
+      })
+    : [];
+  const visitorBySession = new Map<
+    string,
+    { displayName: string; contact: string }
+  >();
+  for (const visitor of visitors) {
+    if (!visitorBySession.has(visitor.guestSessionId)) {
+      visitorBySession.set(visitor.guestSessionId, {
+        displayName: visitor.displayName,
+        contact: visitor.contact,
+      });
+    }
+  }
+
+  return conversations.map((conversation) => {
+    const visitor = visitorBySession.get(conversation.guestSessionId);
+    const last = conversation.messages[0];
+    return {
+      id: conversation.id,
+      status: conversation.status,
+      assignedStaffId: conversation.assignedStaffId,
+      version: conversation.version,
+      updatedAt: conversation.updatedAt.toISOString(),
+      createdAt: conversation.createdAt.toISOString(),
+      messageCount: countByConversation.get(conversation.id) ?? 0,
+      contactName: visitor?.displayName ?? "Visitor",
+      contact: visitor?.contact ?? null,
+      lastMessage: last
+        ? {
+            role: last.role,
+            content: last.content,
+            createdAt: last.createdAt.toISOString(),
+          }
+        : null,
+    };
+  });
 }
 
 export async function getConversationDetail(
@@ -46,7 +106,9 @@ export async function getConversationDetail(
   const conversation = await prisma.conversation.findFirst({
     where: { id: conversationId, clinicId },
   });
-  if (!conversation) throw new DomainError("NOT_FOUND", "Conversation not found");
+  if (!conversation) {
+    throw new DomainError("NOT_FOUND", "Conversation not found");
+  }
 
   // Sequential for local Prisma Postgres (single connection).
   const messages = await prisma.message.findMany({
@@ -61,8 +123,19 @@ export async function getConversationDetail(
     where: { conversationId },
     orderBy: { createdAt: "desc" },
   });
+  const visitor = await prisma.visitor.findFirst({
+    where: { guestSessionId: conversation.guestSessionId },
+    orderBy: { createdAt: "desc" },
+    select: { displayName: true, contact: true, createdAt: true },
+  });
+  const assignedStaff = conversation.assignedStaffId
+    ? await prisma.staffUser.findUnique({
+        where: { id: conversation.assignedStaffId },
+        select: { id: true, email: true, role: true },
+      })
+    : null;
 
-  return { conversation, messages, notes, tickets };
+  return { conversation, visitor, assignedStaff, messages, notes, tickets };
 }
 
 /**
@@ -115,7 +188,11 @@ export async function claimConversation(
 
     await tx.handoffTicket.updateMany({
       where: { conversationId, status: "OPEN" },
-      data: { status: "RESOLVED", resolvedAt: new Date(), resolvedByStaffId: staff.id },
+      data: {
+        status: "RESOLVED",
+        resolvedAt: new Date(),
+        resolvedByStaffId: staff.id,
+      },
     });
 
     await writeAudit(
@@ -142,11 +219,10 @@ export async function staffReply(
   const conversation = await prisma.conversation.findFirst({
     where: { id: conversationId, clinicId: staff.clinicId },
   });
-  if (!conversation) throw new DomainError("NOT_FOUND", "Conversation not found");
-  if (
-    conversation.assignedStaffId !== staff.id &&
-    staff.role !== "ADMIN"
-  ) {
+  if (!conversation) {
+    throw new DomainError("NOT_FOUND", "Conversation not found");
+  }
+  if (conversation.assignedStaffId !== staff.id && staff.role !== "ADMIN") {
     throw new DomainError(
       "FORBIDDEN",
       "This conversation is assigned to another staff member",
@@ -182,7 +258,9 @@ export async function addInternalNote(
     where: { id: conversationId, clinicId: staff.clinicId },
     select: { id: true },
   });
-  if (!conversation) throw new DomainError("NOT_FOUND", "Conversation not found");
+  if (!conversation) {
+    throw new DomainError("NOT_FOUND", "Conversation not found");
+  }
 
   return prisma.internalNote.create({
     data: { conversationId, authorStaffId: staff.id, content },

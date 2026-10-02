@@ -34,7 +34,7 @@ export default async function DashboardOverviewPage() {
         <h1 className="text-2xl font-semibold tracking-tight">
           {clinic?.name ?? "Clinic"}
         </h1>
-        <p className="mt-1 text-sm text-muted">
+        <p className="mt-1 text-sm text-muted-foreground">
           {clinic?.timezone} Â· {clinic?.currency} Â· configuration milestone (M1)
         </p>
       </div>
@@ -44,15 +44,15 @@ export default async function DashboardOverviewPage() {
           <Link
             key={card.label}
             href={card.href}
-            className="rounded-2xl border border-line bg-surface p-6 transition-colors hover:border-primary/50   "
+            className="rounded-2xl border border-border bg-card p-6 transition-colors hover:border-primary/50   "
           >
             <p className="text-3xl font-semibold">{card.value}</p>
-            <p className="mt-1 text-sm text-muted">{card.label}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{card.label}</p>
           </Link>
         ))}
       </div>
 
-      <div className="rounded-2xl border border-line bg-surface p-6 text-sm text-muted   ">
+      <div className="rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground   ">
         Booking, knowledge, and AI capabilities arrive in later milestones. See{" "}
         <span className="font-mono">PLAN.md</span> for the roadmap.
       </div>

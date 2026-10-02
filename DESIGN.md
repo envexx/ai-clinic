@@ -2,62 +2,85 @@
 
 ## Direction
 
-**Warm clinical calm.** A wellness clinic should feel trustworthy and human, not
-sterile or corporate. Deep teal carries action, a warm paper tone carries the
-page, and clay is an accent used sparingly. Headings use a soft serif; the UI
-uses a neutral sans.
+**Professional SaaS.** Clean neutral surfaces, a single indigo accent, and
+information-dense operator screens. The staff area borrows the three-pane
+support-inbox pattern: navigation rail, conversation list, thread, and a details
+panel. The public landing is quiet and typographic.
+
+Built on **shadcn/ui** (Base UI primitives) with Tailwind v4 CSS variables.
 
 ## Modes per surface
 
 | Surface | Mode | Notes |
 |---|---|---|
-| `/`, `/demo` | Persuade / Read | Earn attention, then explain. |
-| `/chat`, `/book`, `/my-appointments` | Operate | Visitor completes a task. |
-| `/staff/login`, `/dashboard/*` | Operate | Scanability and consistency first. |
+| `/` | Persuade | Quiet landing, clear CTA pair. |
+| `/demo`, `/my-appointments` | Read / Operate | Short, legible. |
+| `/chat`, `/book` | Operate | Task-focused. |
+| `/dashboard/inbox` | Operate | Three-pane inbox; scan and reply. |
+| `/dashboard/*` | Operate | Tables, forms, consistent controls. |
 
 ## Tokens
 
-Defined in `src/app/globals.css` (`@theme`), consumed as Tailwind utilities and
-overridden for `prefers-color-scheme: dark`.
+Defined in `src/app/globals.css`; light and dark via the `.dark` class. Values
+are shadcn-style semantic variables (oklch):
 
 | Token | Role |
 |---|---|
-| `paper` | Page background (warm off-white / near-black) |
-| `surface` | Cards, panels, inputs |
-| `ink` | Primary text |
-| `muted` | Secondary text (tinted, never neutral gray) |
-| `line` | Borders and dividers |
-| `primary` / `primary-hover` / `primary-fg` | Action color and its foreground |
-| `accent` | Reserved clay accent |
-| `success` / `warn` / `danger` | Semantic states |
+| `background` / `foreground` | Page surface and primary text |
+| `card` / `card-foreground` | Panels, list and thread surfaces |
+| `muted` / `muted-foreground` | Subtle fills and secondary text |
+| `primary` | Indigo accent (`oklch(0.585 0.233 277)`), actions and active state |
+| `accent` | Hover/selected fills |
+| `border` / `input` | Hairlines and control borders |
+| `destructive` | Errors and destructive actions |
+| `sidebar*` | Sidebar-scale tokens |
 
-Type: `font-display` (Fraunces serif) for h1–h3; `font-sans` (Geist) for UI and
-body; `font-mono` (Geist Mono) for references, codes and measurements only.
+Type: `Geist` (sans) for UI and body; `Geist Mono` only for IDs, references and
+measurement. No serif display face.
 
-Shape: cards `rounded-2xl`, controls `rounded-lg`, chat bubbles
-`rounded-2xl` with one squared corner. Shadow is offset + soft blur; no hard
-block shadows, no glass, no gradient text, no colored side borders.
+Shape: `--radius: 0.75rem`; controls `rounded-md`, cards `rounded-xl`, avatars
+and pills fully round. Shadows are subtle and layered, never hard.
 
 ## Shared primitives
 
-`src/components/ui.ts` is the single source for `inputClass`, `labelClass`,
-`primaryButtonClass`, `secondaryButtonClass`, `dangerButtonClass`, `cardClass`,
-`errorClass`, `successClass`. Prefer these over ad-hoc color classes.
+- `src/components/ui/*` — shadcn components (Button, Badge, Avatar, Input,
+  Textarea, Separator, ScrollArea, Tooltip, DropdownMenu, Tabs).
+- `src/components/ui.ts` — class constants for the bespoke forms that predate
+  shadcn (`inputClass`, `primaryButtonClass`, `cardClass`, …). Prefer shadcn
+  components in new work.
+- `src/lib/utils.ts` — `cn` helper.
+
+## Inbox pattern (`/dashboard/inbox`)
+
+Four regions, collapsing by width:
+
+1. **Navigation rail** — brand, staff identity, icon nav, sign out (dashboard layout).
+2. **Conversation list** — "All chats" with a count, All/Mine/Unassigned
+   filters, avatar rows with last message and relative time.
+3. **Thread** — header with contact, status pill and actions (Claim, Resolve,
+   overflow), message bubbles (visitor left on `muted`, AI/agent right on
+   `primary/10`), and a composer with Send.
+4. **Details** — contact, Chat info (status, Chat ID, started, message count),
+   Chat tags (open handoff ticket), and staff-only internal notes.
+
+Below `md` the layout is single-pane: list first, then the thread with a back
+button. The details panel appears at `xl` and above.
+
+Motion: one authored moment — message bubbles settle in with a short GSAP
+stagger (`power2.out`) when a conversation opens or new messages arrive.
 
 ## Craft floor for this project
 
-- Body and placeholder text ≥ 4.5:1; secondary text is tinted from the palette.
-- Every control ships hover, focus-visible, disabled, loading, error and success
-  states. Keyboard focus is always visible (`:focus-visible` ring from tokens).
-- Browser surfaces are themed: selection color, scrollbar, caret, underline
-  offset, tabular numerals in tables.
-- Groups are tight, sections are generous, more space above a heading than below.
-- Icons are drawn SVG from one family; no emoji or unicode glyphs as icons.
-- One authored moment per page at most; no identical entrance on every section.
+- Body and placeholder text meet 4.5:1; secondary text uses `muted-foreground`.
+- Every control has hover, focus-visible, disabled and loading states; focus is
+  always visible.
+- Real content and working controls; empty, error and permission states exist.
+- Groups are tight and sections generous; more space above a heading than below.
+- Icons are lucide, one stroke weight, sized with the text.
 
 ## Verification
 
-Because screenshots were unavailable in this environment, the pass was verified
-with `pnpm typecheck`, `pnpm lint`, `pnpm build`, `pnpm smoke` (39 runtime
-checks), and the Impeccable mechanical detector (`detect --json src` → no
-findings).
+`pnpm shots` renders landing, login, dashboard and inbox at desktop (1440×900)
+and mobile (390×844) through Playwright into `artifacts/`. Backed by
+`pnpm typecheck`, `pnpm lint`, `pnpm build`, `pnpm smoke`, `pnpm test`, and the
+Impeccable detector.

@@ -166,7 +166,7 @@ export function KnowledgeManager({
 
   return (
     <div className="flex flex-col gap-6">
-      <p className="text-sm text-muted">
+      <p className="text-sm text-muted-foreground">
         Embedding provider:{" "}
         <strong>{geminiConfigured ? "Gemini" : "local fallback (no API key)"}</strong>
         . Only the active version that is APPROVED + READY is retrievable.
@@ -196,15 +196,15 @@ export function KnowledgeManager({
             {citations.map((citation) => (
               <li
                 key={citation.versionId}
-                className="rounded-lg border border-line p-3 "
+                className="rounded-lg border border-border p-3 "
               >
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-medium">{citation.title}</span>
-                  <span className="text-xs text-muted">
+                  <span className="text-xs text-muted-foreground">
                     score {citation.score.toFixed(3)}
                   </span>
                 </div>
-                <p className="mt-1 text-muted ">
+                <p className="mt-1 text-muted-foreground ">
                   {citation.excerpt}
                 </p>
               </li>
@@ -268,7 +268,7 @@ export function KnowledgeManager({
             {document.versions.map((version) => (
               <li
                 key={version.id}
-                className="rounded-lg border border-line p-3 text-sm "
+                className="rounded-lg border border-border p-3 text-sm "
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="font-medium">
@@ -313,7 +313,7 @@ export function KnowledgeManager({
                     )}
                   </div>
                 </div>
-                <p className="mt-2 line-clamp-3 text-muted ">
+                <p className="mt-2 line-clamp-3 text-muted-foreground ">
                   {version.content}
                 </p>
                 {version.error && (

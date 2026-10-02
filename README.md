@@ -19,8 +19,9 @@ staged delivery plan in [`PLAN.md`](./PLAN.md).
 | Database | Prisma Postgres (PostgreSQL), accessed with Prisma ORM + `@prisma/adapter-pg` |
 | Knowledge retrieval | `pgvector` in Postgres (no external memory service) |
 | AI | Google Gemini (free tier) via Vercel AI SDK + `@ai-sdk/google` (from M4) |
-| Styling | Tailwind CSS v4 |
-| Tests | Vitest (unit) + `scripts/smoke.mjs` (runtime) |
+| UI | shadcn/ui (Base UI primitives) on Tailwind CSS v4 |
+| Motion | GSAP (staff inbox message entrance) |
+| Tests | Vitest (unit + integration), `scripts/smoke.mjs` (runtime), Playwright (`pnpm shots`, visual) |
 
 ## Prerequisites
 
@@ -63,6 +64,7 @@ Seeded demo accounts (password from `SEED_STAFF_PASSWORD`, default `demo-passwor
 | `pnpm test:integration` | Vitest integration tests (needs a running database) |
 | `pnpm smoke` | End-to-end runtime checks against a running server |
 | `pnpm eval` | Evaluate the offline agent + retrieval (needs seeded DB) |
+| `pnpm shots` | Playwright screenshots into `artifacts/` (needs a running server) |
 | `pnpm db:dev` | Local Prisma Postgres server |
 | `pnpm db:migrate` / `db:deploy` | Apply migrations (dev / deploy) |
 | `pnpm db:generate` | Regenerate Prisma Client |
@@ -79,7 +81,7 @@ Seeded demo accounts (password from `SEED_STAFF_PASSWORD`, default `demo-passwor
 | `/my-appointments` | Visitor appointments for this browser session |
 | `/staff/login` | Staff sign-in |
 | `/dashboard` | Staff overview |
-| `/dashboard/inbox` | Conversation inbox: claim, reply, notes, resolve |
+| `/dashboard/inbox` | Three-pane support inbox: claim, reply, notes, resolve |
 | `/dashboard/appointments` | Appointment list with status transitions |
 | `/dashboard/services` | Manage services (admin only) |
 | `/dashboard/providers` | Manage providers (admin only) |

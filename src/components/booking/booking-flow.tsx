@@ -200,25 +200,25 @@ export function BookingFlow() {
         </h2>
         <dl className="mt-4 grid gap-2 text-sm">
           <div className="flex justify-between gap-4">
-            <dt className="text-muted">Reference</dt>
+            <dt className="text-muted-foreground">Reference</dt>
             <dd className="font-mono font-semibold">
               {confirmed.bookingReference}
             </dd>
           </div>
           <div className="flex justify-between gap-4">
-            <dt className="text-muted">Service</dt>
+            <dt className="text-muted-foreground">Service</dt>
             <dd>{confirmed.serviceName}</dd>
           </div>
           <div className="flex justify-between gap-4">
-            <dt className="text-muted">Provider</dt>
+            <dt className="text-muted-foreground">Provider</dt>
             <dd>{confirmed.providerName}</dd>
           </div>
           <div className="flex justify-between gap-4">
-            <dt className="text-muted">When</dt>
+            <dt className="text-muted-foreground">When</dt>
             <dd>{formatRange(confirmed.startAt, confirmed.endAt, "Asia/Dubai")}</dd>
           </div>
           <div className="flex justify-between gap-4">
-            <dt className="text-muted">Price</dt>
+            <dt className="text-muted-foreground">Price</dt>
             <dd>{money(confirmed.priceMinor, confirmed.currency)}</dd>
           </div>
         </dl>
@@ -297,14 +297,14 @@ export function BookingFlow() {
                   className={`w-full rounded-md border px-3 py-2 text-left text-sm transition-colors ${
                     selected?.startAt === slot.startAt &&
                     selected?.providerId === slot.providerId
-                      ? "border-primary bg-paper  "
-                      : "border-line hover:border-primary/50 "
+                      ? "border-primary bg-background  "
+                      : "border-border hover:border-primary/50 "
                   }`}
                 >
                   <span className="font-medium">
                     {formatRange(slot.startAt, slot.endAt, slot.timezone)}
                   </span>
-                  <span className="mt-0.5 block text-muted">
+                  <span className="mt-0.5 block text-muted-foreground">
                     {slot.providerName} Â· {money(slot.priceMinor, slot.currency)}
                   </span>
                 </button>
@@ -364,21 +364,21 @@ export function BookingFlow() {
       {prepared && (
         <div className={cardClass}>
           <h2 className="text-lg font-semibold">4. Confirm your booking</h2>
-          <p className="mt-1 text-sm text-muted">
+          <p className="mt-1 text-sm text-muted-foreground">
             Nothing is saved until you confirm. This offer expires at{" "}
             {new Date(prepared.expiresAt).toLocaleTimeString()}.
           </p>
           <dl className="mt-4 grid gap-2 text-sm">
             <div className="flex justify-between gap-4">
-              <dt className="text-muted">Service</dt>
+              <dt className="text-muted-foreground">Service</dt>
               <dd>{prepared.summary.serviceName}</dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-muted">Provider</dt>
+              <dt className="text-muted-foreground">Provider</dt>
               <dd>{prepared.summary.providerName}</dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-muted">When</dt>
+              <dt className="text-muted-foreground">When</dt>
               <dd>
                 {formatRange(
                   prepared.summary.startAt,
@@ -388,11 +388,11 @@ export function BookingFlow() {
               </dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-muted">Name</dt>
+              <dt className="text-muted-foreground">Name</dt>
               <dd>{prepared.summary.displayName}</dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-muted">Price</dt>
+              <dt className="text-muted-foreground">Price</dt>
               <dd>
                 {money(prepared.summary.priceMinor, prepared.summary.currency)}
               </dd>
