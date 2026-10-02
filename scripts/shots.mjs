@@ -62,6 +62,8 @@ async function run() {
 
   await capture("landing-desktop", "/", DESKTOP);
   await capture("login-desktop", "/staff/login", DESKTOP);
+  await capture("chat-desktop", "/chat", DESKTOP);
+  await capture("book-desktop", "/book", DESKTOP);
   await capture("dashboard-desktop", "/dashboard", DESKTOP, { login: true });
   await capture("inbox-desktop", "/dashboard/inbox", DESKTOP, {
     login: true,

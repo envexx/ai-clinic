@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -277,7 +277,7 @@ export function ServicesManager({
                     </td>
                     <td className="py-2 pr-4">
                       {service.providerIds.length === 0
-                        ? "â€”"
+                        ? "—"
                         : service.providerIds
                             .map(
                               (id) =>

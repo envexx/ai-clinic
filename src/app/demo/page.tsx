@@ -1,9 +1,9 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 
 const STEPS = [
   {
     title: "1. Ask about a service",
-    body: "Open the chat, ask â€œWhat are your opening hours?â€ or â€œHow much is a dental cleaning?â€. The reply shows its sources.",
+    body: "Open the chat, ask “What are your opening hours?” or “How much is a dental cleaning?”. The reply shows its sources.",
     href: "/chat",
     cta: "Open chat",
   },
@@ -21,13 +21,13 @@ const STEPS = [
   },
   {
     title: "4. Contend for the same slot",
-    body: "A second visitor trying the same slot gets a clear â€œslot unavailableâ€ instead of a duplicate booking.",
+    body: "A second visitor trying the same slot gets a clear “slot unavailable” instead of a duplicate booking.",
     href: "/book",
     cta: "Open booking",
   },
   {
     title: "5. Hand off to a human",
-    body: "Say â€œI want to talk to staffâ€, then sign in as staff and claim the conversation in the inbox.",
+    body: "Say “I want to talk to staff”, then sign in as staff and claim the conversation in the inbox.",
     href: "/staff/login",
     cta: "Staff sign in",
   },
@@ -44,10 +44,10 @@ export default function DemoPage() {
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-6 py-12">
       <header className="flex flex-col gap-2">
         <p className="inline-flex w-fit rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-amber-800 dark:bg-amber-950 dark:text-amber-300">
-          Portfolio demo â€” synthetic data only
+          Portfolio demo — synthetic data only
         </p>
         <h1 className="text-3xl font-semibold tracking-tight">
-          AI Clinic Front Desk â€” guided scenario
+          AI Clinic Front Desk — guided scenario
         </h1>
         <p className="text-muted-foreground ">
           A five-minute walkthrough. All patient data is synthetic. No secrets

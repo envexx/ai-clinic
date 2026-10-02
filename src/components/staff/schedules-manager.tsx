@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 
@@ -296,7 +296,7 @@ export function SchedulesManager({
             Add a provider before configuring hours.
           </p>
         ) : loading ? (
-          <p className="mt-4 text-sm text-muted-foreground">Loadingâ€¦</p>
+          <p className="mt-4 text-sm text-muted-foreground">Loading…</p>
         ) : (
           <>
             <h3 className="mt-6 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
@@ -333,8 +333,8 @@ export function SchedulesManager({
                     className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border px-3 py-2 "
                   >
                     <span>
-                      {new Date(exception.startsAt).toLocaleString()} â€”{" "}
-                      {new Date(exception.endsAt).toLocaleString()} Â·{" "}
+                      {new Date(exception.startsAt).toLocaleString()} —{" "}
+                      {new Date(exception.endsAt).toLocaleString()} ·{" "}
                       <span className="text-muted-foreground">{exception.reason}</span>
                     </span>
                     <button

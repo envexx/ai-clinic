@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 
@@ -50,7 +50,7 @@ function formatWhen(startAt: string, endAt: string): string {
     hour: "2-digit",
     minute: "2-digit",
   });
-  return `${formatter.format(new Date(startAt))} â€“ ${timeFormatter.format(
+  return `${formatter.format(new Date(startAt))} – ${timeFormatter.format(
     new Date(endAt),
   )}`;
 }
@@ -112,7 +112,7 @@ export function AppointmentsManager() {
           expectedVersion: row.version,
         }),
       });
-      setMessage(`${row.bookingReference} â†’ ${nextStatus}`);
+      setMessage(`${row.bookingReference} → ${nextStatus}`);
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update");

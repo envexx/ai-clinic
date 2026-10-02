@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 
 import { listVisitorAppointments } from "@/modules/appointments/appointments";
 import { readGuestSession } from "@/modules/auth/authorize";
@@ -17,7 +17,7 @@ function formatRange(startAt: string, endAt: string): string {
     hour: "2-digit",
     minute: "2-digit",
   });
-  return `${formatter.format(new Date(startAt))} â€“ ${timeFormatter.format(
+  return `${formatter.format(new Date(startAt))} – ${timeFormatter.format(
     new Date(endAt),
   )}`;
 }

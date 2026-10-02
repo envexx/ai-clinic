@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -70,7 +70,7 @@ function summaryLine(action: PendingAction): string {
         })
       : undefined,
   ].filter(Boolean);
-  return parts.join(" Â· ");
+  return parts.join(" · ");
 }
 
 export function ChatPanel() {
@@ -178,8 +178,8 @@ export function ChatPanel() {
       >
         {messages.length === 0 && (
           <p className="text-sm text-muted-foreground">
-            Ask about services, prices, opening hours or booking. Try â€œwhat are
-            your opening hours?â€ or â€œhow much is a dental cleaning?â€.
+            Ask about services, prices, opening hours or booking. Try “what are
+            your opening hours?” or “how much is a dental cleaning?”.
           </p>
         )}
 
@@ -231,7 +231,7 @@ export function ChatPanel() {
 
         {busy && (
           <p role="status" aria-live="polite" className="self-start text-xs text-muted-foreground">
-            Thinkingâ€¦
+            Thinking…
           </p>
         )}
       </div>
@@ -241,7 +241,7 @@ export function ChatPanel() {
       <form className="flex gap-2" onSubmit={send}>
         <input
           className={inputClass}
-          placeholder="Type a messageâ€¦"
+          placeholder="Type a message…"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           disabled={busy}

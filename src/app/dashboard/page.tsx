@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { prisma } from "@/lib/db";
@@ -35,7 +35,7 @@ export default async function DashboardOverviewPage() {
           {clinic?.name ?? "Clinic"}
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          {clinic?.timezone} Â· {clinic?.currency} Â· configuration milestone (M1)
+          {clinic?.timezone} · {clinic?.currency} · configuration milestone (M1)
         </p>
       </div>
 

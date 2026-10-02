@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -88,7 +88,7 @@ function formatRange(startAt: string, endAt: string, timezone: string): string {
     hour: "2-digit",
     minute: "2-digit",
   });
-  return `${formatter.format(new Date(startAt))} â€“ ${timeFormatter.format(
+  return `${formatter.format(new Date(startAt))} – ${timeFormatter.format(
     new Date(endAt),
   )} (${timezone})`;
 }
@@ -277,7 +277,7 @@ export function BookingFlow() {
               onClick={loadSlots}
               disabled={loadingSlots || !serviceId}
             >
-              {loadingSlots ? "Checkingâ€¦" : "Check availability"}
+              {loadingSlots ? "Checking…" : "Check availability"}
             </button>
           </div>
         </div>
@@ -305,7 +305,7 @@ export function BookingFlow() {
                     {formatRange(slot.startAt, slot.endAt, slot.timezone)}
                   </span>
                   <span className="mt-0.5 block text-muted-foreground">
-                    {slot.providerName} Â· {money(slot.priceMinor, slot.currency)}
+                    {slot.providerName} · {money(slot.priceMinor, slot.currency)}
                   </span>
                 </button>
               </li>
@@ -355,7 +355,7 @@ export function BookingFlow() {
               disabled={busy || !form.consent}
               type="submit"
             >
-              {busy ? "Preparingâ€¦" : "Review booking"}
+              {busy ? "Preparing…" : "Review booking"}
             </button>
           </div>
         </form>
@@ -405,7 +405,7 @@ export function BookingFlow() {
               onClick={confirm}
               disabled={busy}
             >
-              {busy ? "Confirmingâ€¦" : "Confirm booking"}
+              {busy ? "Confirming…" : "Confirm booking"}
             </button>
             <button
               className={secondaryButtonClass}
