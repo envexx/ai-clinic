@@ -1,11 +1,13 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { prisma } from "@/lib/db";
-import { requireStaff } from "@/modules/auth/authorize";
+import { readStaffSession } from "@/modules/auth/authorize";
 
 export default async function DashboardOverviewPage() {
-  const { staffUser } = await requireStaff();
-  const clinicId = staffUser.clinicId;
+  const session = await readStaffSession();
+  if (!session) redirect("/staff/login");
+  const clinicId = session.staffUser.clinicId;
 
   const [services, providers, staff, clinic] = await Promise.all([
     prisma.service.count({ where: { clinicId, active: true } }),
