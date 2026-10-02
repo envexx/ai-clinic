@@ -10,14 +10,25 @@ function normalize(values: number[]): number[] {
   return values.map((value) => value / norm);
 }
 
+const STOPWORDS = new Set([
+  "the", "a", "an", "and", "or", "of", "to", "in", "on", "at", "for", "is",
+  "are", "was", "were", "be", "been", "do", "does", "did", "you", "your", "i",
+  "we", "it", "this", "that", "these", "those", "what", "when", "where",
+  "which", "who", "how", "can", "could", "will", "would", "should", "my", "me",
+  "us", "our", "with", "from", "by", "as", "if", "then", "than", "but", "not",
+  "no", "yes", "have", "has", "had", "please", "hi", "hello", "there", "here",
+]);
+
 /**
  * Deterministic local embedding used when GEMINI_API_KEY is not configured.
- * It is a lexical bag-of-words hash, not a semantic model: good enough to
- * exercise the pipeline and tests, clearly not a substitute for Gemini.
+ * It is a lexical bag-of-words hash with stopwords removed, not a semantic
+ * model: good enough to exercise the pipeline and tests offline.
  */
 export function localEmbed(text: string): number[] {
   const vector = new Array<number>(EMBEDDING_DIMENSION).fill(0);
-  const tokens = text.toLowerCase().match(/[a-z0-9]+/g) ?? [];
+  const tokens = (text.toLowerCase().match(/[a-z0-9]+/g) ?? []).filter(
+    (token) => !STOPWORDS.has(token),
+  );
   for (const token of tokens) {
     let hash = 2166136261;
     for (let index = 0; index < token.length; index += 1) {

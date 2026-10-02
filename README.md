@@ -5,8 +5,8 @@ administrative questions, book/reschedule/cancel appointments, and hand off to
 staff. Staff use a dashboard to manage the same appointments and conversations.
 
 This repository currently implements **M0 – Foundation**, **M1 – Clinic
-configuration**, **M2 – Booking domain**, and **M3 – Knowledge**. The product
-requirements live in
+configuration**, **M2 – Booking domain**, **M3 – Knowledge**, and **M4 – Chat
+agent**. The product requirements live in
 [`PRD_MVP_AI_Clinic_Front_Desk.md`](./PRD_MVP_AI_Clinic_Front_Desk.md) and the
 staged delivery plan in [`PLAN.md`](./PLAN.md).
 
@@ -71,6 +71,7 @@ Seeded demo accounts (password from `SEED_STAFF_PASSWORD`, default `demo-passwor
 | Route | Description |
 |---|---|
 | `/` | Public landing / status |
+| `/chat` | Visitor chat with the front desk assistant |
 | `/book` | Visitor booking flow: slots, contact, confirm |
 | `/my-appointments` | Visitor appointments for this browser session |
 | `/staff/login` | Staff sign-in |
@@ -103,6 +104,7 @@ routes require an `ADMIN` staff session and enforce same-origin on mutations.
 | `/api/admin/schedules/[providerId]` | GET, PUT | Provider working hours + time off |
 | `/api/admin/schedule-exceptions` | POST | Add time off |
 | `/api/admin/schedule-exceptions/[id]` | DELETE | Remove time off |
+| `/api/chat` | GET, POST | Conversation history / send a message |
 | `/api/services` | GET | Public list of active services |
 | `/api/availability` | GET | Free slots for a service (no patient data) |
 | `/api/bookings` | POST | Prepare a booking (creates a pending action) |
@@ -128,6 +130,19 @@ routes require an `ADMIN` staff session and enforce same-origin on mutations.
   **exclusion constraint** on `provider + tstzrange(startAt, occupiedEnd)` for
   active appointments (verified working on local Prisma Postgres).
 - Every mutation writes an `audit_events` row in the same transaction.
+
+### Chat agent
+
+- The agent has read tools (`searchClinicKnowledge`, `getClinicServices`,
+  `getAvailableSlots`, `getOwnedAppointments`) and action tools that only
+  **prepare** a pending action (`prepareBooking`, `prepareReschedule`,
+  `prepareCancellation`, `requestHumanHandoff`). The model can never confirm.
+- With `GEMINI_API_KEY`, it runs Gemini through the Vercel AI SDK with tool
+  calling capped at 6 steps. Without a key, a deterministic keyword fallback
+  agent answers from approved knowledge, guides booking, and abstains when
+  there is no grounded source.
+- Messages are persisted with idempotency per `clientMessageId`; a retry
+  returns the same reply.
 
 ### Knowledge retrieval (no external memory service)
 
@@ -164,6 +179,8 @@ src/
     scheduling/            # timezone-aware availability engine
     appointments/          # booking domain: actions, idempotency, create/reschedule/cancel
     knowledge/             # documents, versions, embeddings, pgvector retrieval
+    conversations/         # conversation + message persistence
+    ai/                    # agent, intent, tools, chat orchestration
     audit/                 # audit event writer
   generated/prisma/        # generated client (gitignored)
 tests/                     # Vitest unit tests
@@ -187,9 +204,13 @@ docs/SPIKE_RESULTS.md      # M0 verification evidence
   dashboard in M5. Capacity conflicts are still impossible because of the
   exclusion constraint.
 - Reschedule/cancel have API and domain support but no visitor UI yet.
-- Without `GEMINI_API_KEY`, embeddings use a lexical local fallback. Semantic
-  quality requires the real Gemini embedding model.
-- The chat agent (streaming, tools, citations in conversation) is M4.
+- Without `GEMINI_API_KEY`, embeddings use a lexical local fallback and the chat
+  agent uses a keyword fallback instead of Gemini. Semantic quality and
+  model-driven tool use require the real key.
+- Chat responses are returned in one JSON response; token streaming and the
+  Gemini path are implemented but not yet runtime-tested without a key.
+- Human handoff is recorded (conversation status) but the staff inbox that
+  handles it is M5.
 
 ## Documentation
 

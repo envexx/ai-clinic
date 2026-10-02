@@ -305,7 +305,7 @@ Keputusan yang masih perlu persetujuan pemilik: pemilihan plan Prisma Postgres (
 2. Bila spike lulus → kerjakan M0 tasks, akhiri dengan CI hijau.
 3. Baru naik ke M1 → M2, dan seterusnya. **Jangan menyentuh M4 sebelum M2 lulus concurrency gate.**
 
-> Status saat ini: M0–M3 selesai (lihat Progress log di bawah). Berikutnya M4 (chat agent dengan Gemini). Dua item terbuka: database Prisma Postgres hosted untuk gate concurrency paralel (AT-08), dan `GEMINI_API_KEY` untuk embedding/LLM sungguhan.
+> Status saat ini: M0–M4 selesai (lihat Progress log di bawah). Berikutnya M5 (human desk). Item terbuka: database Prisma Postgres hosted untuk gate concurrency paralel (AT-08), dan `GEMINI_API_KEY` untuk embedding/LLM sungguhan.
 
 ---
 
@@ -373,7 +373,26 @@ Yang sudah ada:
 
 Catatan: embedding meng-index judul + isi agar pencarian judul akurat. Tanpa API key, kualitas semantik terbatas (fallback leksikal) — dicatat di README.
 
-### Item terbuka sebelum M4
+### M4 — Chat agent: SELESAI dengan fallback teruji (2 Oktober 2026)
 
-- `GEMINI_API_KEY` untuk embedding (dan nanti LLM) sungguhan. Tanpa itu, M4 memakai fallback/abstain.
+Terverifikasi: `pnpm typecheck` (0 error), `pnpm lint` (0 masalah), `pnpm test` (36 lulus), `pnpm build` (44 route), `pnpm smoke` (33 cek runtime lulus), `pnpm test:integration` (11 lulus, 1 skip).
+
+Yang sudah ada:
+- Model `conversations`, `messages` (+ status percakapan, idempotency per `clientMessageId`).
+- Tool read: `searchClinicKnowledge`, `getClinicServices`, `getAvailableSlots`, `getOwnedAppointments`.
+- Tool action yang hanya **prepare**: `prepareBooking`, `prepareReschedule`, `prepareCancellation`, `requestHumanHandoff`. Model tidak pernah confirm.
+- Agent: jalur Gemini via Vercel AI SDK (`generateText` + tool calling, `stopWhen: stepCountIs(6)`) bila `GEMINI_API_KEY` ada; fallback deterministik (klasifikasi intent + knowledge + abstain + handoff) bila tidak.
+- System prompt: abstain tanpa sumber, tanpa diagnosis, harga dari tool, maksimum 6 langkah.
+- API `/api/chat` (POST pesan, GET histori) + UI `/chat` dengan citation panel dan kartu Confirm.
+- Test unit (classifier intent) + integration (jawab dengan citation, abstain, idempotent, handoff).
+
+Catatan jujur:
+- Jalur Gemini **belum diuji runtime** karena belum ada `GEMINI_API_KEY`. Fallback yang teruji.
+- Respons chat masih satu JSON (belum token streaming). Streaming model menyusul saat key tersedia.
+- Threshold relevansi retrieval dikalibrasi (stopword di fallback lokal + `MIN_SCORE`) agar abstain benar.
+
+### Item terbuka sebelum M5
+
+- `GEMINI_API_KEY` untuk menguji jalur Gemini (chat) dan embedding semantik.
 - Uji concurrency paralel (AT-08) masih butuh Prisma Postgres hosted.
+- Streaming respons chat (belum diimplementasikan).

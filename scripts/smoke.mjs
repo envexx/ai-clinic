@@ -229,6 +229,68 @@ async function main() {
     "knowledge retrieval returns citations",
   );
 
+  // --- chat agent ---
+  const chatHeaders = {
+    "content-type": "application/json",
+    origin: BASE,
+    cookie: guestCookie,
+  };
+
+  const chatKnowledge = await fetch(`${BASE}/api/chat`, {
+    method: "POST",
+    headers: chatHeaders,
+    body: JSON.stringify({
+      message: "what are your opening hours?",
+      clientMessageId: `smoke-chat-${Date.now()}`,
+    }),
+  }).then((r) => r.json());
+  assert(
+    chatKnowledge.success && chatKnowledge.data.citations.length > 0,
+    "chat answers a knowledge question with citations",
+  );
+
+  const chatAbstain = await fetch(`${BASE}/api/chat`, {
+    method: "POST",
+    headers: chatHeaders,
+    body: JSON.stringify({
+      message: "do you offer underwater basket weaving?",
+      clientMessageId: `smoke-abstain-${Date.now()}`,
+    }),
+  }).then((r) => r.json());
+  assert(
+    chatAbstain.success && chatAbstain.data.citations.length === 0,
+    "chat abstains without an approved source",
+  );
+
+  const chatClientId = `smoke-idem-${Date.now()}`;
+  const chatFirst = await fetch(`${BASE}/api/chat`, {
+    method: "POST",
+    headers: chatHeaders,
+    body: JSON.stringify({ message: "hello", clientMessageId: chatClientId }),
+  }).then((r) => r.json());
+  const chatReplay = await fetch(`${BASE}/api/chat`, {
+    method: "POST",
+    headers: chatHeaders,
+    body: JSON.stringify({ message: "hello", clientMessageId: chatClientId }),
+  }).then((r) => r.json());
+  assert(
+    chatFirst.success && chatReplay.data.reply === chatFirst.data.reply,
+    "chat is idempotent per clientMessageId",
+  );
+
+  const chatHandoff = await fetch(`${BASE}/api/chat`, {
+    method: "POST",
+    headers: chatHeaders,
+    body: JSON.stringify({
+      message: "I want to talk to staff",
+      clientMessageId: `smoke-handoff-${Date.now()}`,
+    }),
+  }).then((r) => r.json());
+  assert(
+    chatHandoff.success && chatHandoff.data.handoff === true,
+    "chat escalates to human handoff",
+  );
+
   // --- booking flow ---
   const servicesRes = await fetch(`${BASE}/api/services`).then((r) => r.json());
   assert(

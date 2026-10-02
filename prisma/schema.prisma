@@ -44,6 +44,7 @@ model Clinic {
   pendingActions PendingAction[]
   auditEvents   AuditEvent[]
   knowledgeDocuments KnowledgeDocument[]
+  conversations Conversation[]
 
   @@map("clinics")
 }
@@ -388,4 +389,53 @@ model KnowledgeVersion {
 
   @@index([documentId, approvalStatus])
   @@map("knowledge_versions")
+}
+
+enum ConversationStatus {
+  AI_ACTIVE
+  WAITING_HUMAN
+  HUMAN_ACTIVE
+  RESOLVED
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  TOOL
+  SYSTEM
+}
+
+model Conversation {
+  id              String             @id @default(uuid()) @db.Uuid
+  clinicId        String             @db.Uuid
+  guestSessionId  String             @db.Uuid
+  status          ConversationStatus @default(AI_ACTIVE)
+  assignedStaffId String?            @db.Uuid
+  version         Int                @default(1)
+  createdAt       DateTime           @default(now()) @db.Timestamptz
+  updatedAt       DateTime           @updatedAt @db.Timestamptz
+
+  clinic   Clinic    @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  messages Message[]
+
+  @@index([clinicId, status, updatedAt])
+  @@index([guestSessionId])
+  @@map("conversations")
+}
+
+model Message {
+  id              String      @id @default(uuid()) @db.Uuid
+  conversationId  String      @db.Uuid
+  role            MessageRole
+  content         String
+  citations       Json?
+  pendingActionId String?     @db.Uuid
+  clientMessageId String?
+  createdAt       DateTime    @default(now()) @db.Timestamptz
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, clientMessageId])
+  @@index([conversationId, createdAt])
+  @@map("messages")
 }

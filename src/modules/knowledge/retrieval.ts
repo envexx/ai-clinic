@@ -14,6 +14,12 @@ export type KnowledgeCitation = {
 
 const EXCERPT_LENGTH = 280;
 
+/**
+ * Minimum similarity to count as a grounded hit. Below this the assistant must
+ * abstain instead of answering from a weak match.
+ */
+const MIN_SCORE = 0.1;
+
 function toCitation(hit: KnowledgeHit): KnowledgeCitation {
   return {
     documentId: hit.documentId,
@@ -49,5 +55,7 @@ export async function searchKnowledge(
     hits = await keywordSearch(clinicId, trimmed, limit);
   }
 
-  return hits.map(toCitation);
+  return hits
+    .map(toCitation)
+    .filter((citation) => citation.score >= MIN_SCORE);
 }
