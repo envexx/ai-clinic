@@ -1,6 +1,6 @@
 // AI Clinic Front Desk — Prisma schema
 // Source of truth for the domain database (Prisma Postgres / PostgreSQL).
-// See PLAN.md (M0) and PRD_MVP_AI_Clinic_Front_Desk.md section 14.
+// See PLAN.md (M0–M1) and PRD_MVP_AI_Clinic_Front_Desk.md section 14.
 
 generator client {
   provider = "prisma-client"
@@ -17,16 +17,28 @@ enum StaffRole {
 }
 
 model Clinic {
-  id        String   @id @default(uuid()) @db.Uuid
-  name      String
-  timezone  String   @default("Asia/Dubai")
-  currency  String   @default("AED")
+  id     String @id @default(uuid()) @db.Uuid
+  name   String
+  /// IANA timezone, e.g. "Asia/Dubai".
+  timezone String @default("Asia/Dubai")
+  currency String @default("AED")
+
+  // Booking policy (PRD section 6). Durations are minutes.
+  slotGranularityMinutes     Int @default(15)
+  bookingHorizonDays         Int @default(30)
+  minimumNoticeMinutes       Int @default(120)
+  selfServiceCutoffMinutes   Int @default(120)
+  pendingActionTtlMinutes    Int @default(5)
+
   version   Int      @default(1)
   createdAt DateTime @default(now()) @db.Timestamptz
   updatedAt DateTime @updatedAt @db.Timestamptz
 
-  staffUsers   StaffUser[]
+  staffUsers    StaffUser[]
   guestSessions GuestSession[]
+  services      Service[]
+  providers     Provider[]
+  clinicHours   ClinicHour[]
 
   @@map("clinics")
 }
@@ -74,4 +86,103 @@ model GuestSession {
 
   @@index([expiresAt])
   @@map("guest_sessions")
+}
+
+/// Clinic opening hours per weekday. Weekday uses ISO-8601: 1=Monday .. 7=Sunday.
+/// Times are local wall-clock strings "HH:mm" in the clinic timezone.
+model ClinicHour {
+  id        String @id @default(uuid()) @db.Uuid
+  clinicId  String @db.Uuid
+  weekday   Int
+  localStart String
+  localEnd   String
+
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  @@unique([clinicId, weekday, localStart, localEnd])
+  @@index([clinicId, weekday])
+  @@map("clinic_hours")
+}
+
+model Service {
+  id              String   @id @default(uuid()) @db.Uuid
+  clinicId        String   @db.Uuid
+  name            String
+  durationMinutes Int
+  bufferMinutes   Int      @default(0)
+  /// Price in minor units (e.g. fils for AED). Integer only.
+  priceMinor      Int
+  active          Boolean  @default(true)
+  version         Int      @default(1)
+  createdAt       DateTime @default(now()) @db.Timestamptz
+  updatedAt       DateTime @updatedAt @db.Timestamptz
+
+  clinic           Clinic            @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  providerServices ProviderService[]
+
+  @@unique([clinicId, name])
+  @@index([clinicId, active])
+  @@map("services")
+}
+
+model Provider {
+  id          String   @id @default(uuid()) @db.Uuid
+  clinicId    String   @db.Uuid
+  displayName String
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now()) @db.Timestamptz
+  updatedAt   DateTime @updatedAt @db.Timestamptz
+
+  clinic             Clinic              @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  providerServices   ProviderService[]
+  workingHours       WorkingHour[]
+  scheduleExceptions ScheduleException[]
+
+  @@unique([clinicId, displayName])
+  @@index([clinicId, active])
+  @@map("providers")
+}
+
+model ProviderService {
+  providerId String @db.Uuid
+  serviceId  String @db.Uuid
+
+  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  service  Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@id([providerId, serviceId])
+  @@index([serviceId])
+  @@map("provider_services")
+}
+
+/// Recurring weekly working hours. Weekday uses ISO-8601: 1=Monday .. 7=Sunday.
+/// Times are local wall-clock strings "HH:mm" in the clinic timezone.
+model WorkingHour {
+  id         String @id @default(uuid()) @db.Uuid
+  providerId String @db.Uuid
+  weekday    Int
+  localStart String
+  localEnd   String
+
+  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, weekday, localStart, localEnd])
+  @@index([providerId, weekday])
+  @@map("working_hours")
+}
+
+/// One-off time off. Stored as absolute instants; interval is [startsAt, endsAt).
+model ScheduleException {
+  id         String   @id @default(uuid()) @db.Uuid
+  providerId String   @db.Uuid
+  startsAt   DateTime @db.Timestamptz
+  endsAt     DateTime @db.Timestamptz
+  reason     String
+  version    Int      @default(1)
+  createdAt  DateTime @default(now()) @db.Timestamptz
+
+  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@index([providerId, startsAt, endsAt])
+  @@map("schedule_exceptions")
 }

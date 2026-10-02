@@ -8,8 +8,8 @@ import {
   GUEST_SESSION_TTL_SECONDS,
   createGuestSession,
   findGuestSessionByToken,
-  getDefaultClinicId,
 } from "@/modules/auth/guest-session";
+import { getDefaultClinicId } from "@/modules/clinic/clinic";
 
 export const dynamic = "force-dynamic";
 

@@ -305,7 +305,7 @@ Keputusan yang masih perlu persetujuan pemilik: pemilihan plan Prisma Postgres (
 2. Bila spike lulus → kerjakan M0 tasks, akhiri dengan CI hijau.
 3. Baru naik ke M1 → M2, dan seterusnya. **Jangan menyentuh M4 sebelum M2 lulus concurrency gate.**
 
-> Status saat ini: M0 selesai (lihat Progress log di bawah). Berikutnya M1, dengan satu item terbuka: database Prisma Postgres hosted untuk uji concurrency M2.
+> Status saat ini: M0 dan M1 selesai (lihat Progress log di bawah). Berikutnya M2 (booking domain), dengan satu item terbuka: database Prisma Postgres hosted untuk uji concurrency.
 
 ---
 
@@ -324,6 +324,20 @@ Yang sudah ada:
 - Seed WellNest Clinic + 2 akun staf, unit test, smoke test, CI GitHub Actions, README, `docs/SPIKE_RESULTS.md`.
 
 Bukti lengkap: `docs/SPIKE_RESULTS.md`.
+
+### M1 — Clinic configuration: SELESAI (2 Oktober 2026)
+
+Terverifikasi: `pnpm typecheck` (0 error), `pnpm lint` (0 masalah), `pnpm test` (21 lulus), `pnpm build` (22 route), `pnpm smoke` (20 cek runtime lulus).
+
+Yang sudah ada:
+- Model `services`, `providers`, `provider_services`, `working_hours`, `schedule_exceptions`, `clinic_hours`, plus field kebijakan di `clinics` (slot granularity, horizon, notice, cutoff, TTL).
+- Validasi aturan PRD §6: durasi/buffer kelipatan slot granularity, jam kerja tidak overlap, jam provider harus berada di dalam jam klinik, timezone IANA divalidasi.
+- API admin (RBAC ADMIN, same-origin): settings, services, providers, clinic-hours, provider schedules, schedule-exceptions.
+- UI admin: `/staff/login`, `/dashboard`, `/dashboard/services`, `/dashboard/providers`, `/dashboard/schedules`, `/dashboard/settings`.
+- Seed WellNest lengkap: 3 layanan, 2 provider, jam klinik 6 hari, jam kerja provider, 1 time-off; idempoten.
+- Unit test tambahan untuk helper waktu dan validasi jadwal (21 total).
+
+Catatan: T1.6 (conflict preview terhadap appointment confirmed) belum bisa diimplementasikan karena model appointment baru ada di M2. Validasi perubahan jadwal saat ini mencakup jam klinik dan blok jam kerja lain; aturan konflik dengan appointment akan ditambahkan di M2 bersama locking, agar tidak ada appointment invalid.
 
 ### Item terbuka sebelum M2
 

@@ -90,6 +90,127 @@ async function main() {
   const csrfBody = await csrf.json();
   assert(csrf.status === 403 && csrfBody.code === "FORBIDDEN", "cross-origin mutation is rejected");
 
+  // --- admin configuration ---
+  const settings = await fetch(`${BASE}/api/admin/settings`, {
+    headers: { cookie: staffCookie },
+  }).then((r) => r.json());
+  assert(settings.success && settings.data.timezone === "Asia/Dubai", "admin reads clinic settings");
+
+  const services = await fetch(`${BASE}/api/admin/services`, {
+    headers: { cookie: staffCookie },
+  }).then((r) => r.json());
+  assert(
+    services.success && services.data.length >= 3,
+    "admin lists seeded services",
+  );
+
+  const providers = await fetch(`${BASE}/api/admin/providers`, {
+    headers: { cookie: staffCookie },
+  }).then((r) => r.json());
+  assert(
+    providers.success && providers.data.length >= 2,
+    "admin lists seeded providers",
+  );
+
+  // Invalid duration (not a multiple of 15) must be rejected by the domain rule.
+  const invalidService = await fetch(`${BASE}/api/admin/services`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      origin: BASE,
+      cookie: staffCookie,
+    },
+    body: JSON.stringify({
+      name: "Bad service",
+      durationMinutes: 20,
+      bufferMinutes: 0,
+      priceMinor: 1000,
+    }),
+  });
+  const invalidBody = await invalidService.json();
+  assert(
+    invalidService.status === 400 && invalidBody.code === "VALIDATION_ERROR",
+    "service duration must be a multiple of the slot granularity",
+  );
+
+  // A guest session must not reach admin endpoints.
+  const guestAdmin = await fetch(`${BASE}/api/admin/services`, {
+    headers: { cookie: guestCookie },
+  });
+  const guestAdminBody = await guestAdmin.json();
+  assert(
+    guestAdmin.status === 401 && guestAdminBody.code === "UNAUTHORIZED",
+    "guest cannot access admin endpoints",
+  );
+
+  // Dashboard requires a staff session.
+  const dashboard = await fetch(`${BASE}/dashboard`, { redirect: "manual" });
+  assert(
+    dashboard.status >= 300 && dashboard.status < 400,
+    "unauthenticated dashboard redirects to login",
+  );
+
+  const dashboardAuthed = await fetch(`${BASE}/dashboard`, {
+    headers: { cookie: staffCookie },
+  });
+  const dashboardHtml = await dashboardAuthed.text();
+  assert(
+    dashboardAuthed.status === 200 && dashboardHtml.includes("WellNest Clinic"),
+    "authenticated dashboard renders",
+  );
+
+  // Write path: provider working hours and clinic hours round-trip.
+  const firstProviderId = providers.data[0].id;
+  const scheduleRead = await fetch(
+    `${BASE}/api/admin/schedules/${firstProviderId}`,
+    { headers: { cookie: staffCookie } },
+  ).then((r) => r.json());
+  const saveHours = await fetch(
+    `${BASE}/api/admin/schedules/${firstProviderId}`,
+    {
+      method: "PUT",
+      headers: {
+        "content-type": "application/json",
+        origin: BASE,
+        cookie: staffCookie,
+      },
+      body: JSON.stringify({ hours: scheduleRead.data.workingHours }),
+    },
+  );
+  const saveHoursBody = await saveHours.json();
+  assert(
+    saveHours.ok && saveHoursBody.success && saveHoursBody.data.length > 0,
+    "provider working hours round-trip saves",
+  );
+
+  const clinicHoursRead = await fetch(`${BASE}/api/admin/clinic-hours`, {
+    headers: { cookie: staffCookie },
+  }).then((r) => r.json());
+  const saveClinic = await fetch(`${BASE}/api/admin/clinic-hours`, {
+    method: "PUT",
+    headers: {
+      "content-type": "application/json",
+      origin: BASE,
+      cookie: staffCookie,
+    },
+    body: JSON.stringify({ hours: clinicHoursRead.data }),
+  });
+  const saveClinicBody = await saveClinic.json();
+  assert(
+    saveClinic.ok && saveClinicBody.success,
+    "clinic hours round-trip saves",
+  );
+
+  const servicesPage = await fetch(`${BASE}/dashboard/services`, {
+    headers: { cookie: staffCookie },
+  });
+  const servicesHtml = await servicesPage.text();
+  assert(
+    servicesPage.status === 200 &&
+      servicesHtml.includes("General Consultation"),
+    "services admin page renders seeded services",
+  );
+
   console.log("\nAll smoke checks passed.");
 }
 

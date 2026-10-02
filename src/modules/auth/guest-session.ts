@@ -1,28 +1,11 @@
 import { createHash, randomBytes } from "node:crypto";
 
 import { prisma } from "@/lib/db";
-import { DomainError } from "@/lib/result";
 
 const GUEST_SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 30; // 30 days
 
 export function hashToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
-}
-
-/** v1 is single-clinic: resolve the demo clinic once and cache nothing extra. */
-export async function getDefaultClinicId(): Promise<string> {
-  const clinic = await prisma.clinic.findFirst({
-    orderBy: { createdAt: "asc" },
-    select: { id: true },
-  });
-  if (!clinic) {
-    throw new DomainError(
-      "SERVICE_UNAVAILABLE",
-      "Clinic is not configured yet",
-      true,
-    );
-  }
-  return clinic.id;
 }
 
 export type CreatedGuestSession = {

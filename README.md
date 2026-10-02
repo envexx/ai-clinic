@@ -4,9 +4,10 @@ AI receptionist MVP for a wellness/aesthetics clinic: visitors can ask
 administrative questions, book/reschedule/cancel appointments, and hand off to
 staff. Staff use a dashboard to manage the same appointments and conversations.
 
-This repository currently implements **M0 – Foundation** only. The product
-requirements live in [`PRD_MVP_AI_Clinic_Front_Desk.md`](./PRD_MVP_AI_Clinic_Front_Desk.md)
-and the staged delivery plan in [`PLAN.md`](./PLAN.md).
+This repository currently implements **M0 – Foundation** and **M1 – Clinic
+configuration**. The product requirements live in
+[`PRD_MVP_AI_Clinic_Front_Desk.md`](./PRD_MVP_AI_Clinic_Front_Desk.md) and the
+staged delivery plan in [`PLAN.md`](./PLAN.md).
 
 ## Stack
 
@@ -63,10 +64,23 @@ Seeded demo accounts (password from `SEED_STAFF_PASSWORD`, default `demo-passwor
 | `pnpm db:generate` | Regenerate Prisma Client |
 | `pnpm db:seed` | Seed demo data |
 
-## API (M0)
+## Pages
+
+| Route | Description |
+|---|---|
+| `/` | Public landing / status |
+| `/staff/login` | Staff sign-in |
+| `/dashboard` | Staff overview |
+| `/dashboard/services` | Manage services (admin only) |
+| `/dashboard/providers` | Manage providers (admin only) |
+| `/dashboard/schedules` | Clinic hours, provider working hours, time off (admin only) |
+| `/dashboard/settings` | Booking policy and clinic settings (admin only) |
+
+## API
 
 All responses use the envelope `{ success, code, requestId, data, retryable }`
-(see `src/lib/result.ts`). Error codes follow PRD section 16.
+(see `src/lib/result.ts`). Error codes follow PRD section 16. All `/api/admin/*`
+routes require an `ADMIN` staff session and enforce same-origin on mutations.
 
 | Route | Method | Description |
 |---|---|---|
@@ -75,6 +89,15 @@ All responses use the envelope `{ success, code, requestId, data, retryable }`
 | `/api/staff/login` | POST | Staff login, sets a DB-backed session cookie |
 | `/api/staff/logout` | POST | Revoke the staff session |
 | `/api/me` | GET | Current actor: `staff`, `guest`, or `anonymous` |
+| `/api/admin/settings` | GET, PATCH | Clinic policy settings |
+| `/api/admin/services` | GET, POST | List / create services |
+| `/api/admin/services/[id]` | PATCH, DELETE | Update / deactivate a service |
+| `/api/admin/providers` | GET, POST | List / create providers |
+| `/api/admin/providers/[id]` | PATCH | Update a provider |
+| `/api/admin/clinic-hours` | GET, PUT | Clinic opening hours |
+| `/api/admin/schedules/[providerId]` | GET, PUT | Provider working hours + time off |
+| `/api/admin/schedule-exceptions` | POST | Add time off |
+| `/api/admin/schedule-exceptions/[id]` | DELETE | Remove time off |
 
 ## Project structure
 
@@ -87,22 +110,26 @@ scripts/
   smoke.mjs                # runtime smoke test
 src/
   app/                     # App Router pages + API routes
+  components/staff/        # client components for the staff dashboard
   lib/                     # db, env, result envelope, http, logger, rate limit
   modules/
     auth/                  # guest + staff sessions, password hashing, RBAC
+    clinic/                # settings, services, providers, schedules, validation
   generated/prisma/        # generated client (gitignored)
 tests/                     # Vitest unit tests
 docs/SPIKE_RESULTS.md      # M0 verification evidence
 ```
 
-## Known limitations (M0)
+## Known limitations
 
 - Local Prisma Postgres (PGlite) supports only **one connection**, so it cannot
   be used for the concurrency gate. Use hosted Prisma Postgres for that.
 - Rate limiting is in-memory (per instance); persistent limiting is required
   before production.
-- No services/providers/availability/booking, knowledge, or AI yet — those are
-  M1–M4.
+- Schedule writes currently validate against clinic hours and other working
+  blocks. The "reject changes that conflict with a confirmed appointment" rule
+  (PRD section 6) lands in M2 together with the appointment model and locking.
+- Availability, booking, knowledge, and AI are M2–M4.
 
 ## Documentation
 
