@@ -1,0 +1,77 @@
+// AI Clinic Front Desk — Prisma schema
+// Source of truth for the domain database (Prisma Postgres / PostgreSQL).
+// See PLAN.md (M0) and PRD_MVP_AI_Clinic_Front_Desk.md section 14.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum StaffRole {
+  ADMIN
+  RECEPTIONIST
+}
+
+model Clinic {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  timezone  String   @default("Asia/Dubai")
+  currency  String   @default("AED")
+  version   Int      @default(1)
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+
+  staffUsers   StaffUser[]
+  guestSessions GuestSession[]
+
+  @@map("clinics")
+}
+
+model StaffUser {
+  id           String    @id @default(uuid()) @db.Uuid
+  clinicId     String    @db.Uuid
+  email        String    @unique
+  passwordHash String
+  role         StaffRole @default(RECEPTIONIST)
+  active       Boolean   @default(true)
+  createdAt    DateTime  @default(now()) @db.Timestamptz
+  updatedAt    DateTime  @updatedAt @db.Timestamptz
+
+  clinic   Clinic         @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  sessions StaffSession[]
+
+  @@index([clinicId, role, active])
+  @@map("staff_users")
+}
+
+model StaffSession {
+  id          String    @id @default(uuid()) @db.Uuid
+  staffUserId String    @db.Uuid
+  tokenHash   String    @unique
+  expiresAt   DateTime  @db.Timestamptz
+  revokedAt   DateTime? @db.Timestamptz
+  createdAt   DateTime  @default(now()) @db.Timestamptz
+
+  staffUser StaffUser @relation(fields: [staffUserId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+  @@map("staff_sessions")
+}
+
+model GuestSession {
+  id        String    @id @default(uuid()) @db.Uuid
+  clinicId  String    @db.Uuid
+  tokenHash String    @unique
+  expiresAt DateTime  @db.Timestamptz
+  revokedAt DateTime? @db.Timestamptz
+  createdAt DateTime  @default(now()) @db.Timestamptz
+
+  clinic Clinic @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+  @@map("guest_sessions")
+}
