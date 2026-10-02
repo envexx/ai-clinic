@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 
@@ -50,7 +50,7 @@ function formatWhen(startAt: string, endAt: string): string {
     hour: "2-digit",
     minute: "2-digit",
   });
-  return `${formatter.format(new Date(startAt))} – ${timeFormatter.format(
+  return `${formatter.format(new Date(startAt))} â€“ ${timeFormatter.format(
     new Date(endAt),
   )}`;
 }
@@ -112,7 +112,7 @@ export function AppointmentsManager() {
           expectedVersion: row.version,
         }),
       });
-      setMessage(`${row.bookingReference} → ${nextStatus}`);
+      setMessage(`${row.bookingReference} â†’ ${nextStatus}`);
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update");
@@ -184,11 +184,11 @@ export function AppointmentsManager() {
 
       <div className={cardClass}>
         {rows.length === 0 ? (
-          <p className="text-sm text-zinc-500">No appointments.</p>
+          <p className="text-sm text-muted">No appointments.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="text-xs uppercase tracking-wide text-zinc-500">
+              <thead className="text-xs uppercase tracking-wide text-muted">
                 <tr>
                   <th className="py-2 pr-4">Reference</th>
                   <th className="py-2 pr-4">Visitor</th>
@@ -203,14 +203,14 @@ export function AppointmentsManager() {
                 {rows.map((row) => (
                   <tr
                     key={row.id}
-                    className="border-t border-zinc-100 dark:border-zinc-800"
+                    className="border-t border-line "
                   >
                     <td className="py-2 pr-4 font-mono">
                       {row.bookingReference}
                     </td>
                     <td className="py-2 pr-4">
                       {row.visitorName}
-                      <span className="block text-xs text-zinc-500">
+                      <span className="block text-xs text-muted">
                         {row.contact}
                       </span>
                     </td>

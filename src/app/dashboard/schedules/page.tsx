@@ -1,4 +1,4 @@
-import { SchedulesManager } from "@/components/staff/schedules-manager";
+﻿import { SchedulesManager } from "@/components/staff/schedules-manager";
 import { readStaffSession } from "@/modules/auth/authorize";
 import { listProviders } from "@/modules/clinic/providers";
 import {
@@ -11,7 +11,7 @@ export default async function SchedulesPage() {
   if (!session) return null;
   if (session.staffUser.role !== "ADMIN") {
     return (
-      <p className="text-sm text-zinc-500">
+      <p className="text-sm text-muted">
         Only clinic admins can manage schedules.
       </p>
     );

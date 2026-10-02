@@ -1,23 +1,26 @@
+const focusRing =
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-paper";
+
 export const inputClass =
-  "w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100";
+  `w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm text-ink shadow-sm outline-none transition placeholder:text-muted/70 focus:border-primary focus:ring-2 focus:ring-primary/25 disabled:cursor-not-allowed disabled:opacity-60 ${focusRing}`;
 
 export const labelClass =
-  "flex flex-col gap-1 text-xs font-medium uppercase tracking-wide text-zinc-500";
+  "flex flex-col gap-1.5 text-xs font-medium uppercase tracking-wide text-muted";
 
 export const primaryButtonClass =
-  "inline-flex items-center justify-center rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300";
+  `inline-flex items-center justify-center rounded-lg bg-primary px-3.5 py-2 text-sm font-medium text-primary-fg transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50 ${focusRing}`;
 
 export const secondaryButtonClass =
-  "inline-flex items-center justify-center rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800";
+  `inline-flex items-center justify-center rounded-lg border border-line bg-surface px-3.5 py-2 text-sm font-medium text-ink transition-colors hover:border-primary/40 hover:bg-paper disabled:cursor-not-allowed disabled:opacity-50 ${focusRing}`;
 
 export const dangerButtonClass =
-  "inline-flex items-center justify-center rounded-md border border-red-300 px-3 py-2 text-sm font-medium text-red-700 transition-colors hover:bg-red-50 disabled:opacity-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950";
+  `inline-flex items-center justify-center rounded-lg border border-danger/40 bg-surface px-3.5 py-2 text-sm font-medium text-danger transition-colors hover:bg-danger/10 disabled:cursor-not-allowed disabled:opacity-50 ${focusRing}`;
 
 export const cardClass =
-  "rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950";
+  "rounded-2xl border border-line bg-surface p-6 shadow-[0_1px_2px_rgba(22,33,30,0.05),0_18px_40px_-28px_rgba(22,33,30,0.35)]";
 
 export const errorClass =
-  "rounded-md bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300";
+  "rounded-lg border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger";
 
 export const successClass =
-  "rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300";
+  "rounded-lg border border-success/30 bg-success/10 px-3 py-2 text-sm text-success";

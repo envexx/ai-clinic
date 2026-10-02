@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -201,7 +201,7 @@ export function ServicesManager({
         </div>
 
         <fieldset className="mt-4">
-          <legend className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+          <legend className="text-xs font-medium uppercase tracking-wide text-muted">
             Eligible providers
           </legend>
           <div className="mt-2 flex flex-wrap gap-3">
@@ -219,7 +219,7 @@ export function ServicesManager({
               </label>
             ))}
             {providers.length === 0 && (
-              <span className="text-sm text-zinc-500">
+              <span className="text-sm text-muted">
                 Add a provider first.
               </span>
             )}
@@ -248,11 +248,11 @@ export function ServicesManager({
       <div className={cardClass}>
         <h2 className="text-lg font-semibold">Services</h2>
         {services.length === 0 ? (
-          <p className="mt-3 text-sm text-zinc-500">No services yet.</p>
+          <p className="mt-3 text-sm text-muted">No services yet.</p>
         ) : (
           <div className="mt-3 overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="text-xs uppercase tracking-wide text-zinc-500">
+              <thead className="text-xs uppercase tracking-wide text-muted">
                 <tr>
                   <th className="py-2 pr-4">Name</th>
                   <th className="py-2 pr-4">Duration</th>
@@ -267,7 +267,7 @@ export function ServicesManager({
                 {services.map((service) => (
                   <tr
                     key={service.id}
-                    className="border-t border-zinc-100 dark:border-zinc-800"
+                    className="border-t border-line "
                   >
                     <td className="py-2 pr-4 font-medium">{service.name}</td>
                     <td className="py-2 pr-4">{service.durationMinutes} min</td>
@@ -277,7 +277,7 @@ export function ServicesManager({
                     </td>
                     <td className="py-2 pr-4">
                       {service.providerIds.length === 0
-                        ? "—"
+                        ? "â€”"
                         : service.providerIds
                             .map(
                               (id) =>

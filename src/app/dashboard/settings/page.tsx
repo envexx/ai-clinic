@@ -1,4 +1,4 @@
-import { SettingsForm } from "@/components/staff/settings-form";
+﻿import { SettingsForm } from "@/components/staff/settings-form";
 import { readStaffSession } from "@/modules/auth/authorize";
 import { getClinicSettings } from "@/modules/clinic/clinic";
 
@@ -7,7 +7,7 @@ export default async function SettingsPage() {
   if (!session) return null;
   if (session.staffUser.role !== "ADMIN") {
     return (
-      <p className="text-sm text-zinc-500">
+      <p className="text-sm text-muted">
         Only clinic admins can change settings.
       </p>
     );

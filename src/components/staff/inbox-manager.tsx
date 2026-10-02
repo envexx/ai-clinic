@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 
@@ -171,11 +171,11 @@ export function InboxManager({ staffId }: { staffId: string }) {
   return (
     <div className="grid gap-4 lg:grid-cols-[20rem_1fr]">
       <div className={`${cardClass} max-h-[70vh] overflow-y-auto`}>
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
           Conversations
         </h2>
         {items.length === 0 ? (
-          <p className="mt-3 text-sm text-zinc-500">No conversations yet.</p>
+          <p className="mt-3 text-sm text-muted">No conversations yet.</p>
         ) : (
           <ul className="mt-3 flex flex-col gap-2">
             {items.map((item) => (
@@ -185,20 +185,20 @@ export function InboxManager({ staffId }: { staffId: string }) {
                   onClick={() => selectConversation(item.id)}
                   className={`w-full rounded-md border px-3 py-2 text-left text-sm ${
                     selectedId === item.id
-                      ? "border-zinc-900 bg-zinc-100 dark:border-zinc-100 dark:bg-zinc-800"
-                      : "border-zinc-200 hover:border-zinc-400 dark:border-zinc-800"
+                      ? "border-primary bg-paper  "
+                      : "border-line hover:border-primary/50 "
                   }`}
                 >
                   <span className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+                    <span className="text-xs font-medium uppercase tracking-wide text-muted">
                       {item.status}
                     </span>
                     {item.assignedStaffId === staffId && (
                       <span className="text-xs text-emerald-600">mine</span>
                     )}
                   </span>
-                  <span className="mt-1 block truncate text-zinc-600 dark:text-zinc-300">
-                    {item.lastMessage?.content ?? "—"}
+                  <span className="mt-1 block truncate text-muted ">
+                    {item.lastMessage?.content ?? "â€”"}
                   </span>
                 </button>
               </li>
@@ -209,7 +209,7 @@ export function InboxManager({ staffId }: { staffId: string }) {
 
       <div className={`${cardClass} flex flex-col gap-4`}>
         {!detail ? (
-          <p className="text-sm text-zinc-500">
+          <p className="text-sm text-muted">
             Select a conversation to view it.
           </p>
         ) : (
@@ -217,7 +217,7 @@ export function InboxManager({ staffId }: { staffId: string }) {
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="text-sm">
                 <p className="font-medium">Status: {detail.conversation.status}</p>
-                <p className="text-zinc-500">
+                <p className="text-muted">
                   {detail.conversation.assignedStaffId
                     ? detail.conversation.assignedStaffId === staffId
                       ? "Assigned to you"
@@ -256,13 +256,13 @@ export function InboxManager({ staffId }: { staffId: string }) {
                   key={item.id}
                   className={`rounded-md px-3 py-2 text-sm ${
                     item.role === "USER"
-                      ? "bg-zinc-100 dark:bg-zinc-800"
+                      ? "bg-paper "
                       : item.role === "STAFF"
                         ? "bg-emerald-50 dark:bg-emerald-950"
                         : "bg-blue-50 dark:bg-blue-950"
                   }`}
                 >
-                  <span className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+                  <span className="text-xs font-medium uppercase tracking-wide text-muted">
                     {item.role}
                   </span>
                   <p className="whitespace-pre-wrap">{item.content}</p>
@@ -273,7 +273,7 @@ export function InboxManager({ staffId }: { staffId: string }) {
             <form className="flex gap-2" onSubmit={sendReply}>
               <input
                 className={inputClass}
-                placeholder="Reply to visitor…"
+                placeholder="Reply to visitorâ€¦"
                 value={reply}
                 onChange={(e) => setReply(e.target.value)}
                 disabled={busy || !assignedToMe}
@@ -287,13 +287,13 @@ export function InboxManager({ staffId }: { staffId: string }) {
               </button>
             </form>
             {!assignedToMe && (
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-muted">
                 Claim the conversation to reply.
               </p>
             )}
 
-            <div className="border-t border-zinc-200 pt-4 dark:border-zinc-800">
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+            <div className="border-t border-line pt-4 ">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">
                 Internal notes (not visible to visitor)
               </h3>
               <ul className="mt-2 flex flex-col gap-1 text-sm">
@@ -306,13 +306,13 @@ export function InboxManager({ staffId }: { staffId: string }) {
                   </li>
                 ))}
                 {detail.notes.length === 0 && (
-                  <li className="text-zinc-500">No notes.</li>
+                  <li className="text-muted">No notes.</li>
                 )}
               </ul>
               <form className="mt-2 flex gap-2" onSubmit={addNote}>
                 <input
                   className={inputClass}
-                  placeholder="Add an internal note…"
+                  placeholder="Add an internal noteâ€¦"
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   disabled={busy}
@@ -328,7 +328,7 @@ export function InboxManager({ staffId }: { staffId: string }) {
             </div>
 
             {detail.tickets.length > 0 && (
-              <div className="text-xs text-zinc-500">
+              <div className="text-xs text-muted">
                 Handoff tickets:{" "}
                 {detail.tickets
                   .map((ticket) => `${ticket.status} (${ticket.reason})`)

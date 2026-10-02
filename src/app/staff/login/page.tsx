@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -41,7 +41,7 @@ export default function StaffLoginPage() {
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-6 px-6 py-16">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Staff sign in</h1>
-        <p className="mt-1 text-sm text-zinc-500">
+        <p className="mt-1 text-sm text-muted">
           WellNest Clinic dashboard access.
         </p>
       </div>
@@ -71,12 +71,12 @@ export default function StaffLoginPage() {
         {error && <p className={`mt-4 ${errorClass}`}>{error}</p>}
 
         <button className={`mt-4 w-full ${primaryButtonClass}`} disabled={busy} type="submit">
-          {busy ? "Signing in…" : "Sign in"}
+          {busy ? "Signing inâ€¦" : "Sign in"}
         </button>
       </form>
 
-      <p className="text-xs text-zinc-500">
-        Demo accounts: admin@wellnest.demo / frontdesk@wellnest.demo — password
+      <p className="text-xs text-muted">
+        Demo accounts: admin@wellnest.demo / frontdesk@wellnest.demo â€” password
         from <span className="font-mono">SEED_STAFF_PASSWORD</span>.
       </p>
     </main>

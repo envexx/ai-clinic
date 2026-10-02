@@ -1,4 +1,4 @@
-import { ProvidersManager } from "@/components/staff/providers-manager";
+﻿import { ProvidersManager } from "@/components/staff/providers-manager";
 import { readStaffSession } from "@/modules/auth/authorize";
 import { listProviders } from "@/modules/clinic/providers";
 
@@ -7,7 +7,7 @@ export default async function ProvidersPage() {
   if (!session) return null;
   if (session.staffUser.role !== "ADMIN") {
     return (
-      <p className="text-sm text-zinc-500">
+      <p className="text-sm text-muted">
         Only clinic admins can manage providers.
       </p>
     );

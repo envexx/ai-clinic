@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -85,17 +85,17 @@ export function ProvidersManager({ providers }: { providers: ProviderRow[] }) {
       <div className={cardClass}>
         <h2 className="text-lg font-semibold">Providers</h2>
         {providers.length === 0 ? (
-          <p className="mt-3 text-sm text-zinc-500">No providers yet.</p>
+          <p className="mt-3 text-sm text-muted">No providers yet.</p>
         ) : (
           <ul className="mt-3 flex flex-col gap-2">
             {providers.map((provider) => (
               <li
                 key={provider.id}
-                className="flex items-center justify-between gap-2 rounded-md border border-zinc-200 px-3 py-2 dark:border-zinc-800"
+                className="flex items-center justify-between gap-2 rounded-lg border border-line px-3 py-2 "
               >
                 <span className="text-sm font-medium">
                   {provider.displayName}{" "}
-                  <span className="text-zinc-500">
+                  <span className="text-muted">
                     ({provider.active ? "Active" : "Inactive"})
                   </span>
                 </span>

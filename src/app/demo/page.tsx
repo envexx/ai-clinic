@@ -1,9 +1,9 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 
 const STEPS = [
   {
     title: "1. Ask about a service",
-    body: "Open the chat, ask “What are your opening hours?” or “How much is a dental cleaning?”. The reply shows its sources.",
+    body: "Open the chat, ask â€œWhat are your opening hours?â€ or â€œHow much is a dental cleaning?â€. The reply shows its sources.",
     href: "/chat",
     cta: "Open chat",
   },
@@ -21,13 +21,13 @@ const STEPS = [
   },
   {
     title: "4. Contend for the same slot",
-    body: "A second visitor trying the same slot gets a clear “slot unavailable” instead of a duplicate booking.",
+    body: "A second visitor trying the same slot gets a clear â€œslot unavailableâ€ instead of a duplicate booking.",
     href: "/book",
     cta: "Open booking",
   },
   {
     title: "5. Hand off to a human",
-    body: "Say “I want to talk to staff”, then sign in as staff and claim the conversation in the inbox.",
+    body: "Say â€œI want to talk to staffâ€, then sign in as staff and claim the conversation in the inbox.",
     href: "/staff/login",
     cta: "Staff sign in",
   },
@@ -44,26 +44,26 @@ export default function DemoPage() {
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-6 py-12">
       <header className="flex flex-col gap-2">
         <p className="inline-flex w-fit rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-amber-800 dark:bg-amber-950 dark:text-amber-300">
-          Portfolio demo — synthetic data only
+          Portfolio demo â€” synthetic data only
         </p>
         <h1 className="text-3xl font-semibold tracking-tight">
-          AI Clinic Front Desk — guided scenario
+          AI Clinic Front Desk â€” guided scenario
         </h1>
-        <p className="text-zinc-600 dark:text-zinc-400">
+        <p className="text-muted ">
           A five-minute walkthrough. All patient data is synthetic. No secrets
           are shown on this page.
         </p>
       </header>
 
-      <section className="rounded-xl border border-zinc-200 p-6 dark:border-zinc-800">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
+      <section className="rounded-2xl border border-line p-6 ">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
           Staff demo accounts
         </h2>
         <ul className="mt-3 space-y-1 font-mono text-sm">
           <li>admin@wellnest.demo (ADMIN)</li>
           <li>frontdesk@wellnest.demo (RECEPTIONIST)</li>
         </ul>
-        <p className="mt-2 text-sm text-zinc-500">
+        <p className="mt-2 text-sm text-muted">
           Password: value of your local <span className="font-mono">SEED_STAFF_PASSWORD</span>{" "}
           (default <span className="font-mono">demo-password</span>).
         </p>
@@ -73,14 +73,14 @@ export default function DemoPage() {
         {STEPS.map((step) => (
           <li
             key={step.title}
-            className="rounded-xl border border-zinc-200 p-5 dark:border-zinc-800"
+            className="rounded-2xl border border-line p-5 "
           >
             <h3 className="font-semibold">{step.title}</h3>
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="mt-1 text-sm text-muted ">
               {step.body}
             </p>
             <Link
-              className="mt-3 inline-flex items-center justify-center rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
+              className="mt-3 inline-flex items-center justify-center rounded-lg border border-line px-3 py-1.5 text-sm font-medium text-ink transition-colors hover:bg-paper   "
               href={step.href}
             >
               {step.cta}
@@ -89,11 +89,11 @@ export default function DemoPage() {
         ))}
       </ol>
 
-      <section className="rounded-xl border border-zinc-200 p-6 text-sm dark:border-zinc-800">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
+      <section className="rounded-2xl border border-line p-6 text-sm ">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
           Notes and limitations
         </h2>
-        <ul className="mt-3 list-disc space-y-1 pl-5 text-zinc-600 dark:text-zinc-400">
+        <ul className="mt-3 list-disc space-y-1 pl-5 text-muted ">
           <li>
             Without a <span className="font-mono">GEMINI_API_KEY</span>, the chat
             uses a deterministic fallback agent and embeddings use a lexical

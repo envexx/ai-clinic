@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -70,7 +70,7 @@ function summaryLine(action: PendingAction): string {
         })
       : undefined,
   ].filter(Boolean);
-  return parts.join(" · ");
+  return parts.join(" Â· ");
 }
 
 export function ChatPanel() {
@@ -177,9 +177,9 @@ export function ChatPanel() {
         className={`${cardClass} flex max-h-[60vh] flex-col gap-3 overflow-y-auto`}
       >
         {messages.length === 0 && (
-          <p className="text-sm text-zinc-500">
-            Ask about services, prices, opening hours or booking. Try “what are
-            your opening hours?” or “how much is a dental cleaning?”.
+          <p className="text-sm text-muted">
+            Ask about services, prices, opening hours or booking. Try â€œwhat are
+            your opening hours?â€ or â€œhow much is a dental cleaning?â€.
           </p>
         )}
 
@@ -188,15 +188,15 @@ export function ChatPanel() {
             key={message.id}
             className={
               message.role === "USER"
-                ? "self-end rounded-lg bg-zinc-900 px-3 py-2 text-sm text-white dark:bg-zinc-100 dark:text-zinc-900"
-                : "self-start rounded-lg bg-zinc-100 px-3 py-2 text-sm dark:bg-zinc-800"
+                ? "max-w-[85%] self-end rounded-2xl rounded-br-md bg-primary px-4 py-2.5 text-sm text-primary-fg"
+                : "max-w-[85%] self-start rounded-2xl rounded-bl-md border border-line bg-surface px-4 py-2.5 text-sm"
             }
           >
             <p className="whitespace-pre-wrap">{message.content}</p>
 
             {message.citations.length > 0 && (
-              <div className="mt-2 flex flex-col gap-1 border-t border-zinc-300 pt-2 text-xs dark:border-zinc-600">
-                <span className="font-medium uppercase tracking-wide text-zinc-500">
+              <div className="mt-2 flex flex-col gap-1 border-t border-line pt-2 text-xs ">
+                <span className="font-medium uppercase tracking-wide text-muted">
                   Sources
                 </span>
                 {message.citations.map((citation) => (
@@ -209,7 +209,7 @@ export function ChatPanel() {
             )}
 
             {message.pendingAction && (
-              <div className="mt-2 rounded-md border border-zinc-300 bg-white p-2 text-xs dark:border-zinc-600 dark:bg-zinc-900">
+              <div className="mt-2 rounded-lg border border-line bg-surface p-2 text-xs  ">
                 <p className="font-medium">
                   {message.pendingAction.type.replace(/_/g, " ").toLowerCase()}
                 </p>
@@ -230,8 +230,8 @@ export function ChatPanel() {
         ))}
 
         {busy && (
-          <p role="status" aria-live="polite" className="self-start text-xs text-zinc-500">
-            Thinking…
+          <p role="status" aria-live="polite" className="self-start text-xs text-muted">
+            Thinkingâ€¦
           </p>
         )}
       </div>
@@ -241,7 +241,7 @@ export function ChatPanel() {
       <form className="flex gap-2" onSubmit={send}>
         <input
           className={inputClass}
-          placeholder="Type a message…"
+          placeholder="Type a messageâ€¦"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           disabled={busy}

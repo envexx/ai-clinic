@@ -1,4 +1,4 @@
-import { ChatPanel } from "@/components/chat/chat-panel";
+﻿import { ChatPanel } from "@/components/chat/chat-panel";
 
 export default function ChatPage() {
   return (
@@ -7,7 +7,7 @@ export default function ChatPage() {
         <h1 className="text-2xl font-semibold tracking-tight">
           Chat with the front desk
         </h1>
-        <p className="mt-1 text-sm text-zinc-500">
+        <p className="mt-1 text-sm text-muted">
           Administrative questions and booking guidance. This is not medical
           advice; the assistant abstains when there is no approved source.
         </p>

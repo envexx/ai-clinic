@@ -1,4 +1,4 @@
-import { KnowledgeManager } from "@/components/staff/knowledge-manager";
+﻿import { KnowledgeManager } from "@/components/staff/knowledge-manager";
 import { readStaffSession } from "@/modules/auth/authorize";
 import { isGeminiConfigured } from "@/modules/knowledge/embeddings";
 import { listDocuments } from "@/modules/knowledge/knowledge";
@@ -8,7 +8,7 @@ export default async function KnowledgePage() {
   if (!session) return null;
   if (session.staffUser.role !== "ADMIN") {
     return (
-      <p className="text-sm text-zinc-500">
+      <p className="text-sm text-muted">
         Only clinic admins can manage knowledge.
       </p>
     );

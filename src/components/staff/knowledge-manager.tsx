@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -166,7 +166,7 @@ export function KnowledgeManager({
 
   return (
     <div className="flex flex-col gap-6">
-      <p className="text-sm text-zinc-500">
+      <p className="text-sm text-muted">
         Embedding provider:{" "}
         <strong>{geminiConfigured ? "Gemini" : "local fallback (no API key)"}</strong>
         . Only the active version that is APPROVED + READY is retrievable.
@@ -196,15 +196,15 @@ export function KnowledgeManager({
             {citations.map((citation) => (
               <li
                 key={citation.versionId}
-                className="rounded-md border border-zinc-200 p-3 dark:border-zinc-800"
+                className="rounded-lg border border-line p-3 "
               >
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-medium">{citation.title}</span>
-                  <span className="text-xs text-zinc-500">
+                  <span className="text-xs text-muted">
                     score {citation.score.toFixed(3)}
                   </span>
                 </div>
-                <p className="mt-1 text-zinc-600 dark:text-zinc-400">
+                <p className="mt-1 text-muted ">
                   {citation.excerpt}
                 </p>
               </li>
@@ -268,7 +268,7 @@ export function KnowledgeManager({
             {document.versions.map((version) => (
               <li
                 key={version.id}
-                className="rounded-md border border-zinc-200 p-3 text-sm dark:border-zinc-800"
+                className="rounded-lg border border-line p-3 text-sm "
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="font-medium">
@@ -313,7 +313,7 @@ export function KnowledgeManager({
                     )}
                   </div>
                 </div>
-                <p className="mt-2 line-clamp-3 text-zinc-600 dark:text-zinc-400">
+                <p className="mt-2 line-clamp-3 text-muted ">
                   {version.content}
                 </p>
                 {version.error && (

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 
@@ -52,7 +52,7 @@ function HoursEditor({
   return (
     <div className="flex flex-col gap-2">
       {hours.length === 0 && (
-        <p className="text-sm text-zinc-500">{emptyLabel}</p>
+        <p className="text-sm text-muted">{emptyLabel}</p>
       )}
       {hours.map((hour, index) => (
         <div key={index} className="flex flex-wrap items-end gap-2">
@@ -252,7 +252,7 @@ export function SchedulesManager({
 
       <section className={cardClass}>
         <h2 className="text-lg font-semibold">Clinic opening hours</h2>
-        <p className="mt-1 text-sm text-zinc-500">
+        <p className="mt-1 text-sm text-muted">
           Provider hours must fit inside these blocks.
         </p>
         <div className="mt-4">
@@ -292,14 +292,14 @@ export function SchedulesManager({
         </label>
 
         {providers.length === 0 ? (
-          <p className="mt-4 text-sm text-zinc-500">
+          <p className="mt-4 text-sm text-muted">
             Add a provider before configuring hours.
           </p>
         ) : loading ? (
-          <p className="mt-4 text-sm text-zinc-500">Loading…</p>
+          <p className="mt-4 text-sm text-muted">Loadingâ€¦</p>
         ) : (
           <>
-            <h3 className="mt-6 text-sm font-semibold uppercase tracking-wide text-zinc-500">
+            <h3 className="mt-6 text-sm font-semibold uppercase tracking-wide text-muted">
               Weekly working hours
             </h3>
             <div className="mt-2">
@@ -320,22 +320,22 @@ export function SchedulesManager({
               </button>
             </div>
 
-            <h3 className="mt-8 text-sm font-semibold uppercase tracking-wide text-zinc-500">
+            <h3 className="mt-8 text-sm font-semibold uppercase tracking-wide text-muted">
               Time off
             </h3>
             {exceptions.length === 0 ? (
-              <p className="mt-2 text-sm text-zinc-500">No time off.</p>
+              <p className="mt-2 text-sm text-muted">No time off.</p>
             ) : (
               <ul className="mt-2 flex flex-col gap-2 text-sm">
                 {exceptions.map((exception) => (
                   <li
                     key={exception.id}
-                    className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-zinc-200 px-3 py-2 dark:border-zinc-800"
+                    className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-line px-3 py-2 "
                   >
                     <span>
-                      {new Date(exception.startsAt).toLocaleString()} —{" "}
-                      {new Date(exception.endsAt).toLocaleString()} ·{" "}
-                      <span className="text-zinc-500">{exception.reason}</span>
+                      {new Date(exception.startsAt).toLocaleString()} â€”{" "}
+                      {new Date(exception.endsAt).toLocaleString()} Â·{" "}
+                      <span className="text-muted">{exception.reason}</span>
                     </span>
                     <button
                       className={dangerButtonClass}

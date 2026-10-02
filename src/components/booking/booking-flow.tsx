@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -88,7 +88,7 @@ function formatRange(startAt: string, endAt: string, timezone: string): string {
     hour: "2-digit",
     minute: "2-digit",
   });
-  return `${formatter.format(new Date(startAt))} – ${timeFormatter.format(
+  return `${formatter.format(new Date(startAt))} â€“ ${timeFormatter.format(
     new Date(endAt),
   )} (${timezone})`;
 }
@@ -200,25 +200,25 @@ export function BookingFlow() {
         </h2>
         <dl className="mt-4 grid gap-2 text-sm">
           <div className="flex justify-between gap-4">
-            <dt className="text-zinc-500">Reference</dt>
+            <dt className="text-muted">Reference</dt>
             <dd className="font-mono font-semibold">
               {confirmed.bookingReference}
             </dd>
           </div>
           <div className="flex justify-between gap-4">
-            <dt className="text-zinc-500">Service</dt>
+            <dt className="text-muted">Service</dt>
             <dd>{confirmed.serviceName}</dd>
           </div>
           <div className="flex justify-between gap-4">
-            <dt className="text-zinc-500">Provider</dt>
+            <dt className="text-muted">Provider</dt>
             <dd>{confirmed.providerName}</dd>
           </div>
           <div className="flex justify-between gap-4">
-            <dt className="text-zinc-500">When</dt>
+            <dt className="text-muted">When</dt>
             <dd>{formatRange(confirmed.startAt, confirmed.endAt, "Asia/Dubai")}</dd>
           </div>
           <div className="flex justify-between gap-4">
-            <dt className="text-zinc-500">Price</dt>
+            <dt className="text-muted">Price</dt>
             <dd>{money(confirmed.priceMinor, confirmed.currency)}</dd>
           </div>
         </dl>
@@ -277,7 +277,7 @@ export function BookingFlow() {
               onClick={loadSlots}
               disabled={loadingSlots || !serviceId}
             >
-              {loadingSlots ? "Checking…" : "Check availability"}
+              {loadingSlots ? "Checkingâ€¦" : "Check availability"}
             </button>
           </div>
         </div>
@@ -297,15 +297,15 @@ export function BookingFlow() {
                   className={`w-full rounded-md border px-3 py-2 text-left text-sm transition-colors ${
                     selected?.startAt === slot.startAt &&
                     selected?.providerId === slot.providerId
-                      ? "border-zinc-900 bg-zinc-100 dark:border-zinc-100 dark:bg-zinc-800"
-                      : "border-zinc-200 hover:border-zinc-400 dark:border-zinc-800"
+                      ? "border-primary bg-paper  "
+                      : "border-line hover:border-primary/50 "
                   }`}
                 >
                   <span className="font-medium">
                     {formatRange(slot.startAt, slot.endAt, slot.timezone)}
                   </span>
-                  <span className="mt-0.5 block text-zinc-500">
-                    {slot.providerName} · {money(slot.priceMinor, slot.currency)}
+                  <span className="mt-0.5 block text-muted">
+                    {slot.providerName} Â· {money(slot.priceMinor, slot.currency)}
                   </span>
                 </button>
               </li>
@@ -355,7 +355,7 @@ export function BookingFlow() {
               disabled={busy || !form.consent}
               type="submit"
             >
-              {busy ? "Preparing…" : "Review booking"}
+              {busy ? "Preparingâ€¦" : "Review booking"}
             </button>
           </div>
         </form>
@@ -364,21 +364,21 @@ export function BookingFlow() {
       {prepared && (
         <div className={cardClass}>
           <h2 className="text-lg font-semibold">4. Confirm your booking</h2>
-          <p className="mt-1 text-sm text-zinc-500">
+          <p className="mt-1 text-sm text-muted">
             Nothing is saved until you confirm. This offer expires at{" "}
             {new Date(prepared.expiresAt).toLocaleTimeString()}.
           </p>
           <dl className="mt-4 grid gap-2 text-sm">
             <div className="flex justify-between gap-4">
-              <dt className="text-zinc-500">Service</dt>
+              <dt className="text-muted">Service</dt>
               <dd>{prepared.summary.serviceName}</dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-zinc-500">Provider</dt>
+              <dt className="text-muted">Provider</dt>
               <dd>{prepared.summary.providerName}</dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-zinc-500">When</dt>
+              <dt className="text-muted">When</dt>
               <dd>
                 {formatRange(
                   prepared.summary.startAt,
@@ -388,11 +388,11 @@ export function BookingFlow() {
               </dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-zinc-500">Name</dt>
+              <dt className="text-muted">Name</dt>
               <dd>{prepared.summary.displayName}</dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-zinc-500">Price</dt>
+              <dt className="text-muted">Price</dt>
               <dd>
                 {money(prepared.summary.priceMinor, prepared.summary.currency)}
               </dd>
@@ -405,7 +405,7 @@ export function BookingFlow() {
               onClick={confirm}
               disabled={busy}
             >
-              {busy ? "Confirming…" : "Confirm booking"}
+              {busy ? "Confirmingâ€¦" : "Confirm booking"}
             </button>
             <button
               className={secondaryButtonClass}

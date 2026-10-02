@@ -1,4 +1,4 @@
-import { ServicesManager } from "@/components/staff/services-manager";
+﻿import { ServicesManager } from "@/components/staff/services-manager";
 import { readStaffSession } from "@/modules/auth/authorize";
 import { getClinicSettings } from "@/modules/clinic/clinic";
 import { listProviders } from "@/modules/clinic/providers";
@@ -9,7 +9,7 @@ export default async function ServicesPage() {
   if (!session) return null;
   if (session.staffUser.role !== "ADMIN") {
     return (
-      <p className="text-sm text-zinc-500">
+      <p className="text-sm text-muted">
         Only clinic admins can manage services.
       </p>
     );
