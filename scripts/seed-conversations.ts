@@ -6,6 +6,9 @@ import { prisma } from "../src/lib/db";
 import { isModelConfigured } from "../src/modules/ai/agent";
 import { handleChatMessage } from "../src/modules/ai/chat";
 
+// Require genuine model replies here: never substitute the offline fallback.
+process.env.AI_STRICT = "1";
+
 const RETRY_DELAY_MS = 25_000;
 
 async function sendWithRetry(

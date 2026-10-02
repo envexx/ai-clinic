@@ -269,6 +269,8 @@ async function runModelTurn(
     messages,
     tools: buildTools(ctx, collected),
     stopWhen: stepCountIs(8),
+    // Fail fast so a rate limit degrades to the grounded fallback quickly.
+    maxRetries: 0,
   });
 
   // The model sometimes ends a step with only tool calls. Ask once more for a
@@ -285,6 +287,7 @@ async function runModelTurn(
           content: "Please answer my last message now, in plain text.",
         },
       ],
+      maxRetries: 0,
     });
     replyText = followUp.text.trim();
   }
@@ -320,12 +323,19 @@ export async function runAgentTurn(
     logger.error("ai.model_turn_failed", {
       message: error instanceof Error ? error.message : String(error),
     });
-    // Never turn a model failure into a fake answer.
-    if (error instanceof DomainError) throw error;
-    throw new DomainError(
-      "SERVICE_UNAVAILABLE",
-      "The assistant is temporarily unavailable. You can still use /book or ask for staff.",
-      true,
-    );
+
+    // In strict mode (used when seeding real model conversations) a model
+    // failure must surface so it can be retried, never silently replaced.
+    if (process.env.AI_STRICT === "1") {
+      if (error instanceof DomainError) throw error;
+      throw new DomainError(
+        "SERVICE_UNAVAILABLE",
+        "The assistant is temporarily unavailable. You can still use /book or ask for staff.",
+        true,
+      );
+    }
+
+    // Otherwise degrade to the grounded offline agent instead of failing.
+    return runFallbackTurn(ctx, conversationId, userText);
   }
 }

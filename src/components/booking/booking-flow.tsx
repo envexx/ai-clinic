@@ -201,7 +201,7 @@ export function BookingFlow() {
         <dl className="mt-4 grid gap-2 text-sm">
           <div className="flex justify-between gap-4">
             <dt className="text-muted-foreground">Reference</dt>
-            <dd className="font-mono font-semibold">
+            <dd data-testid="booking-reference" className="font-mono font-semibold">
               {confirmed.bookingReference}
             </dd>
           </div>
@@ -293,6 +293,7 @@ export function BookingFlow() {
               <li key={`${slot.providerId}-${slot.startAt}`}>
                 <button
                   type="button"
+                  data-testid="slot-option"
                   onClick={() => setSelected(slot)}
                   className={`w-full rounded-md border px-3 py-2 text-left text-sm transition-colors ${
                     selected?.startAt === slot.startAt &&

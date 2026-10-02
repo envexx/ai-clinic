@@ -63,6 +63,7 @@ Seeded staff accounts (password from `SEED_STAFF_PASSWORD`, default `demo-passwo
 | `pnpm test` | Vitest unit tests (no database needed) |
 | `pnpm test:integration` | Vitest integration tests (needs a running database) |
 | `pnpm smoke` | End-to-end runtime checks against a running server |
+| `pnpm e2e` | Playwright walkthrough: runs the whole app and saves screenshots to `docs/screenshots/` |
 | `pnpm eval` | Evaluate the offline agent + retrieval (needs seeded DB) |
 | `pnpm shots` | Playwright screenshots into `artifacts/` (needs a running server) |
 | `pnpm db:dev` | Local Prisma Postgres server |
@@ -88,6 +89,36 @@ Seeded staff accounts (password from `SEED_STAFF_PASSWORD`, default `demo-passwo
 | `/dashboard/schedules` | Clinic hours, provider working hours, time off (admin only) |
 | `/dashboard/knowledge` | Knowledge documents, versions, approval, retrieval test (admin only) |
 | `/dashboard/settings` | Booking policy and clinic settings (admin only) |
+
+## Walkthrough (Playwright)
+
+`pnpm e2e` drives the whole product through Playwright and asserts each step:
+visitor chat, booking with confirmation, the staff inbox (claim, reply, note),
+the appointment ledger, and admin pages. It writes screenshots to
+`docs/screenshots/`. The run fails if any step or any browser error occurs.
+
+### Visitor
+
+![Landing](docs/screenshots/01-landing.png)
+![Chat answer](docs/screenshots/03-chat-answer.png)
+![Booking slots](docs/screenshots/04-booking-slots.png)
+![Booking confirmed](docs/screenshots/06-booking-confirmed.png)
+![My appointments](docs/screenshots/07-my-appointments.png)
+
+### Staff
+
+![Staff sign in](docs/screenshots/08-staff-login.png)
+![Dashboard](docs/screenshots/09-dashboard.png)
+![Inbox](docs/screenshots/10-inbox-thread.png)
+![Inbox reply and note](docs/screenshots/12-inbox-note.png)
+![Appointments](docs/screenshots/13-appointments.png)
+![Knowledge](docs/screenshots/15-knowledge.png)
+![Schedules](docs/screenshots/18-schedules.png)
+
+### Mobile
+
+![Landing on mobile](docs/screenshots/20-landing-mobile.png)
+![Inbox on mobile](docs/screenshots/21-inbox-mobile.png)
 
 ## API
 
