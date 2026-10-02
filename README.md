@@ -13,7 +13,7 @@ staged delivery plan in [`PLAN.md`](./PLAN.md).
 
 ## Live
 
-- **Production:** https://ai-clinic-hge6vfozh-envexxs-projects.vercel.app
+- **Production:** https://ai-clinic-sand.vercel.app
 - **Staff sign in:** `admin@wellnest.demo` / `demo-password`
 - Runtime: Next.js on Vercel, **Prisma Postgres** (hosted) with `pgvector`, **Gemini** for chat and embeddings.
 
