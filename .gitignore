@@ -45,3 +45,5 @@ next-env.d.ts
 
 # local verification artifacts (screenshots)
 /artifacts
+
+.vercel

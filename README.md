@@ -11,6 +11,12 @@ live in
 [`PRD_MVP_AI_Clinic_Front_Desk.md`](./PRD_MVP_AI_Clinic_Front_Desk.md) and the
 staged delivery plan in [`PLAN.md`](./PLAN.md).
 
+## Live
+
+- **Production:** https://ai-clinic-hge6vfozh-envexxs-projects.vercel.app
+- **Staff sign in:** `admin@wellnest.demo` / `demo-password`
+- Runtime: Next.js on Vercel, **Prisma Postgres** (hosted) with `pgvector`, **Gemini** for chat and embeddings.
+
 ## Stack
 
 | Layer | Choice |
